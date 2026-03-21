@@ -52,85 +52,123 @@ chord begins. Never repeat a chord on the next beat if it is a continuation.
 
 BAR SUBDIVISION LAYOUT
 -----------------------
-A bar box can be subdivided in two distinct ways:
+A bar box can be subdivided in two distinct ways: a DIAGONAL SPLIT or a FOUR-SQUARE
+SPLIT. These are easily confused at low scan resolution. Apply the mandatory
+identification step below before choosing any rule.
 
-A) DIAGONAL SPLIT
-   A single diagonal line from top-right to bottom-left divides the box into:
-     upper-left triangle  = beats 1+2  → encode on beat "1"
-     lower-right triangle = beats 3+4  → encode on beat "3"
-   Result: { "beats": { "1": "chordA", "3": "chordB" } }
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MANDATORY FIRST STEP — answer this question before doing anything else:
 
-B) FOUR-SQUARE SPLIT
-   Two lines (one horizontal, one vertical) divide the box into four squares:
-     top-left     = beat 1
-     top-right    = beat 2
-     bottom-left  = beat 3
-     bottom-right = beat 4
+  Does a straight horizontal line span the FULL WIDTH of the bar box,
+  cleanly dividing it into a distinct upper half and a distinct lower half?
 
-   Squares are only drawn and a chord only written when that beat's chord DIFFERS
-   from the beat immediately before it. Reading rules:
+  → If NO:  the box is either undivided or diagonally split. Go to section A.
+  → If YES: the box uses the four-square layout. Go to section B, Rules 3–6.
 
-   KEY VISUAL DISTINCTION — apply this check before selecting a rule:
-   First determine whether a horizontal line crosses the full width of the bar box,
-   dividing it into a distinct upper half and a distinct lower half.
+Do not proceed until this question is answered. Never infer the layout from
+the number of chords alone — always ground the decision in the visible lines.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-   - NO horizontal dividing line → the box interior is undivided. Only a small
-     inset square may appear framed in the bottom-right corner. Apply Rule 1 or 2.
 
-   - HORIZONTAL DIVIDING LINE PRESENT → the box is split into upper and lower
-     halves. The lower half may be further divided vertically into left and right
-     squares. Apply Rules 3, 4, 5, or 6 depending on how many sub-squares appear.
+A) NO HORIZONTAL DIVIDING LINE → DIAGONAL SPLIT or UNDIVIDED
 
-   1. No subdivision lines, one chord written:
-      → chord lasts all 4 beats. Use plain string. Example: "Cm7"
+   A1) UNDIVIDED — one chord, no subdivision lines:
+       → chord lasts all 4 beats. Use plain string. Example: "Cm7"
 
-   2. NO horizontal dividing line. One chord fills the large undivided box area;
-      one chord sits in a small square inset/framed exclusively in the bottom-right
-      corner. There is no horizontal line splitting the box into halves — the
-      bottom-right square is a small inset within an otherwise undivided box.
-      → large undivided area chord = beats 1, 2, 3  → encode on beat "1"
-      → bottom-right inset chord   = beat 4          → encode on beat "4"
-      Result: { "beats": { "1": "chordA", "4": "chordB" } }
+   A2) BOTTOM-RIGHT INSET — no horizontal line; one chord fills the large
+       undivided area; a second chord sits in a small square framed exclusively
+       in the bottom-right corner:
+       → large area chord  = beats 1–3  → encode on beat "1"
+       → inset chord       = beat 4     → encode on beat "4"
+       Result: { "beats": { "1": "chordA", "4": "chordB" } }
 
-   3. HORIZONTAL LINE present. One chord in the UPPER HALF + one chord in the
-      LOWER HALF (lower half is not further subdivided vertically):
+   A3) DIAGONAL SPLIT — a single diagonal line runs from the TOP-RIGHT corner
+       to the BOTTOM-LEFT corner of the box, with NO horizontal line present:
+       → upper-left triangle  = beats 1+2  → encode on beat "1"
+       → lower-right triangle = beats 3+4  → encode on beat "3"
+       Result: { "beats": { "1": "chordA", "3": "chordB" } }
+
+   ⚠ DIAGONAL vs. RULE 4 — most common confusion:
+   A diagonal split has ONE slanted line and NO horizontal line.
+   Rule 4 (below) has a horizontal line across the full box width PLUS a
+   vertical line only in the lower half — producing one chord above and TWO
+   chords below. If you can see two distinct chords in the lower region of the
+   box, the box has a horizontal dividing line and Rule 4 applies, regardless
+   of how the lines look at low scan resolution. Do not default to diagonal.
+
+
+B) HORIZONTAL DIVIDING LINE PRESENT → FOUR-SQUARE SPLIT (Rules 3–6)
+
+   The horizontal line is always present. Additional vertical lines subdivide
+   the upper half, the lower half, or both. Choose the rule by counting how
+   many chords appear in the upper and lower halves.
+
+   Rule 3 — ONE chord above, ONE chord below (lower half undivided):
       → upper chord = beats 1+2  → encode on beat "1"
       → lower chord = beats 3+4  → encode on beat "3"
       Result: { "beats": { "1": "chordA", "3": "chordB" } }
 
-   4. HORIZONTAL LINE present. One chord in the UPPER HALF + the lower half is
-      divided vertically into a LOWER-LEFT square and a LOWER-RIGHT square, each
-      with its own chord:
+   Rule 4 — ONE chord above, TWO chords below (lower half split vertically):
       → upper chord        = beats 1+2  → encode on beat "1"
-      → bottom-left chord  = beat 3     → encode on beat "3"
-      → bottom-right chord = beat 4     → encode on beat "4"
+      → lower-left chord   = beat 3     → encode on beat "3"
+      → lower-right chord  = beat 4     → encode on beat "4"
       Result: { "beats": { "1": "chordA", "3": "chordB", "4": "chordC" } }
 
-   5. HORIZONTAL LINE present. The upper half is divided vertically into an
-      UPPER-LEFT square and an UPPER-RIGHT square; the lower half has one chord
-      and is not further subdivided:
-      → top-left chord  = beat 1      → encode on beat "1"
-      → top-right chord = beat 2      → encode on beat "2"
-      → lower chord     = beats 3+4   → encode on beat "3"
+      NOTE: Rule 4 is the correct rule whenever one chord occupies the full
+      upper half and two distinct chords share the lower half. This is the
+      layout most often confused with a diagonal split — the upper chord
+      spanning the full width can visually resemble a large triangle. Confirm
+      by checking for the horizontal line and the vertical line in the lower
+      half before concluding it is a diagonal.
+
+   Rule 5 — TWO chords above (upper half split vertically), ONE chord below:
+      → upper-left chord  = beat 1      → encode on beat "1"
+      → upper-right chord = beat 2      → encode on beat "2"
+      → lower chord       = beats 3+4   → encode on beat "3"
       Result: { "beats": { "1": "chordA", "2": "chordB", "3": "chordC" } }
 
-   6. HORIZONTAL LINE present. Both halves are divided vertically: UPPER-LEFT,
-      UPPER-RIGHT, LOWER-LEFT, LOWER-RIGHT each have their own chord:
-      → top-left chord     = beat 1  → encode on beat "1"
-      → top-right chord    = beat 2  → encode on beat "2"
-      → bottom-left chord  = beat 3  → encode on beat "3"
-      → bottom-right chord = beat 4  → encode on beat "4"
+   Rule 6 — TWO chords above, TWO chords below (both halves split vertically):
+      → upper-left chord   = beat 1  → encode on beat "1"
+      → upper-right chord  = beat 2  → encode on beat "2"
+      → lower-left chord   = beat 3  → encode on beat "3"
+      → lower-right chord  = beat 4  → encode on beat "4"
       Result: { "beats": { "1": "chordA", "2": "chordB", "3": "chordC", "4": "chordD" } }
 
-   BOUNDARY BOX RULE FOR THE BAR SUBDIVISION LAYOUT
 
-   When a bar is subdivided (diagonal or four-square), each chord symbol — including any alteration suffixes (b5, #5, b9, #9, m, °, etc.) — must be read only from within that beat's own boundary region. Alterations printed outside a beat's region, even if visually adjacent, belong exclusively to the chord occupying the region where they appear.
+BOUNDARY BOX RULE FOR THE BAR SUBDIVISION LAYOUT
+-------------------------------------------------
+When a bar is subdivided (diagonal or four-square), each chord symbol —
+including any alteration suffixes (b5, #5, b9, #9, m, °, etc.) — must be
+read only from within that beat's own boundary region. Alterations printed
+outside a beat's region, even if visually adjacent, belong exclusively to
+the chord occupying the region where they appear.
 
-   Examples:
-     A bar with a diagonal split where "Am7" appears in the upper-left triangle and "b5" appears in the lower-right triangle: encode beat 1 as "Am7" and beat 3 as the chord in the lower-right triangle including the b5 alteration.
-     A four-square split where "D9" is in the upper-left square and "(b5)" is in the upper-right square: "(b5)" belongs to the beat 2 chord, not to beat 1.
+BOUNDARY PROXIMITY — when an alteration symbol appears on or immediately
+adjacent to a subdivision boundary line (within one glyph-width of the
+line), assign it to the region whose centroid it is closest to. If this
+is genuinely indeterminate at scan resolution, append "?" to both
+candidate chords and record the ambiguity in notation_notes.
 
-   Never "reach across" a subdivision boundary to attach an alteration to a neighbouring beat's chord.
+NO HARMONIC INFERENCE — never use chord-type familiarity or harmonic
+context to resolve boundary ambiguity. The fact that a suffix would
+produce a common or expected chord type (e.g. b5 completing a
+half-diminished chord, #5 completing an augmented dominant) is not
+evidence that the suffix belongs to a neighbouring beat's region.
+Assign alterations by region geometry only.
+
+Examples:
+  A bar with a diagonal split where "Am7" appears in the upper-left
+  triangle and "b5" appears in the lower-right triangle: encode beat 1
+  as "Am7" and beat 3 as the chord in the lower-right triangle including
+  the b5 alteration — even though "Am7b5" is a common jazz chord type.
+
+  A four-square split where "D9" is in the upper-left square and "(b5)"
+  is in the upper-right square: "(b5)" belongs to the beat 2 chord, not
+  to beat 1.
+
+Never "reach across" a subdivision boundary to attach an alteration to a
+neighbouring beat's chord.
+
 
 
 REPEAT RULES — ALL CASES
@@ -167,7 +205,7 @@ CHORD NOTATION RULES
 - Major 7th: use "7M", e.g. "Eb7M"
 - Minor chord: use "m", e.g. "Cm"
 - Half-diminished: "m7b5", e.g. "Am7b5"
-- Half-diminished: "ø", encode with "m7b5", e.g. "Am7b5"
+- Half-diminished: "ø", encode with "m7b5", e.g. "Am7b5"
 - Diminished: "°", e.g. "C°"
 - Augmented dominant: use "#", e.g. "G7#"
 - Raised 11th / #11 / superscript 11+: encode as "#11", e.g. "Eb9#11"
