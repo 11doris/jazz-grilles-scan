@@ -53,20 +53,44 @@ chord begins. Never repeat a chord on the next beat if it is a continuation.
 BAR SUBDIVISION LAYOUT
 -----------------------
 A bar box can be subdivided in two distinct ways: a DIAGONAL SPLIT or a FOUR-SQUARE
-SPLIT. These are easily confused at low scan resolution. Apply the mandatory
-identification step below before choosing any rule.
+SPLIT. These are easily confused at low scan resolution. Follow the mandatory
+classification procedure below for every subdivided bar before encoding any chords.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-MANDATORY FIRST STEP — answer this question before doing anything else:
+MANDATORY CLASSIFICATION PROCEDURE
 
-  Does a straight horizontal line span the FULL WIDTH of the bar box,
+For every bar that is not a plain undivided bar, complete all three steps
+in order. Do not skip steps. Do not begin encoding chords until step 3
+is complete.
+
+STEP 1 — COUNT THE CHORDS
+  Count the distinct chord symbols visible in the bar box.
+  Write the count before proceeding:  CHORDS: N
+
+  → If N = 1: the bar is undivided. Use plain string. Stop here.
+  → If N = 2: the bar may be diagonal or Rule 3. Proceed to Step 2.
+  → If N = 3: the bar must be Rule 4 or Rule 5. Proceed to Step 2.
+  → If N = 4: the bar must be Rule 6. Proceed to Step 2.
+
+  A diagonal split can only produce 2 chords. If you count 3 or 4 chords,
+  a diagonal reading is impossible — do not default to diagonal regardless
+  of how the lines appear at low scan resolution.
+
+STEP 2 — CHECK FOR A HORIZONTAL DIVIDING LINE
+  Ask: does a straight horizontal line span the FULL WIDTH of the bar box,
   cleanly dividing it into a distinct upper half and a distinct lower half?
+  Write the answer before proceeding:  HORIZONTAL: YES or NO
 
-  → If NO:  the box is either undivided or diagonally split. Go to section A.
-  → If YES: the box uses the four-square layout. Go to section B, Rules 3–6.
+  → If NO:  the bar is either undivided (N=1) or diagonally split (N=2).
+            Go to section A below.
+  → If YES: the bar uses the four-square layout.
+            Go to section B below.
 
-Do not proceed until this question is answered. Never infer the layout from
-the number of chords alone — always ground the decision in the visible lines.
+STEP 3 — DECLARE THE LAYOUT
+  Write the layout before encoding any chords:
+  LAYOUT: [undivided | diagonal | rule3 | rule4 | rule5 | rule6]
+
+  Only after writing this declaration may you encode the chords.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
@@ -92,9 +116,19 @@ A) NO HORIZONTAL DIVIDING LINE → DIAGONAL SPLIT or UNDIVIDED
    A diagonal split has ONE slanted line and NO horizontal line.
    Rule 4 (below) has a horizontal line across the full box width PLUS a
    vertical line only in the lower half — producing one chord above and TWO
-   chords below. If you can see two distinct chords in the lower region of the
-   box, the box has a horizontal dividing line and Rule 4 applies, regardless
-   of how the lines look at low scan resolution. Do not default to diagonal.
+   chords below. If you can see two distinct chords in the lower region of
+   the box, the box has a horizontal dividing line and Rule 4 applies,
+   regardless of how the lines look at low scan resolution.
+   Do not default to diagonal.
+
+   ⚠ DIAGONAL vs. RULE 5 — second most common confusion:
+   A diagonal split has ONE slanted line and NO horizontal line, producing
+   exactly two chords. Rule 5 has a horizontal line across the full box
+   width PLUS a vertical line only in the upper half — producing THREE
+   chords (two above, one below). If you can see two distinct chords
+   sitting side-by-side in the upper region of a box, a horizontal
+   dividing line is present and Rule 5 applies.
+   Do not default to diagonal.
 
 
 B) HORIZONTAL DIVIDING LINE PRESENT → FOUR-SQUARE SPLIT (Rules 3–6)
@@ -126,6 +160,13 @@ B) HORIZONTAL DIVIDING LINE PRESENT → FOUR-SQUARE SPLIT (Rules 3–6)
       → upper-right chord = beat 2      → encode on beat "2"
       → lower chord       = beats 3+4   → encode on beat "3"
       Result: { "beats": { "1": "chordA", "2": "chordB", "3": "chordC" } }
+
+      NOTE: Rule 5 is the correct rule whenever two distinct chords sit
+      side-by-side in the upper region of a box. This is the layout most
+      often confused with a diagonal split — at low scan resolution the
+      upper-left chord and the dividing lines can resemble a triangle.
+      If Step 1 returned N=3, a diagonal reading is impossible: Rule 5
+      (or Rule 4) must apply.
 
    Rule 6 — TWO chords above, TWO chords below (both halves split vertically):
       → upper-left chord   = beat 1  → encode on beat "1"
@@ -170,7 +211,6 @@ Never "reach across" a subdivision boundary to attach an alteration to a
 neighbouring beat's chord.
 
 
-
 REPEAT RULES — ALL CASES
 -------------------------
 In every case below, ALWAYS write out the actual chord(s) explicitly.
@@ -210,7 +250,7 @@ CHORD NOTATION RULES
 - Augmented dominant: use "#", e.g. "G7#"
 - Raised 11th / #11 / superscript 11+: encode as "#11", e.g. "Eb9#11"
 - Augmented 5th written as superscript "5+": encode inline as #5, e.g. "G7#5" or "Bb7#5"
-- "t" suffix on a chord means "+", which encodes to "#": e.g. "Eb9t" → "Eb#9", "G9t" → "G#9", "F75t" → "F7#5" 
+- "t" suffix on a chord means "+", which encodes to "#": e.g. "Eb9t" → "Eb#9", "G9t" → "G#9", "F75t" → "F7#5"
 - The notation "E9/14" means E9#11 — the 14th is French/European shorthand for #11
   (7+7=14). Encode as "E9#11".
 - Chord alterations shown in parentheses () are optional suggestions — omit them including their content.
