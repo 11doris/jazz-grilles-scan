@@ -16,10 +16,10 @@ Your response must contain exactly two blocks in this order:
 
 1. <scratchpad>
    Contains all bar boundary pre-passes and multi-pass bar readings, one bar at a time,
-   with all mandatory written intermediate answers (BARS: N, CHORDS: N, Q1-CHECK: ...,
-   LAYOUT: ..., LOWER-STACKING: ..., CHORD: ...). No JSON here. This block must be
-   complete before the JSON block begins. Producing the <json> block without a complete
-   <scratchpad> is a protocol violation.
+   with all mandatory written intermediate answers (BARS: N, BAR N: CHORDS: K,
+   Q1-CHECK: ..., LINE-DESC: ..., LAYOUT: ..., LOWER-STACKING: ..., CHORD: ...).
+   No JSON here. This block must be complete before the JSON block begins.
+   Producing the <json> block without a complete <scratchpad> is a protocol violation.
 
 2. <json>
    The final JSON array only. No prose, no markdown fences, no commentary.
@@ -78,17 +78,30 @@ count the total number of distinct chord symbols visible and write:
   BAR N: CHORDS: K
 
 Commit to all K values before proceeding to per-bar layout classification.
-This row-level count is the single most important gatekeeper against
-misclassification. Diagonal splits produce exactly 2 chords. If K >= 3 for
-any bar, diagonal is ruled out for that bar permanently -- no visual impression
-of a triangle or slanted line can override this.
+This row-level pre-pass count is the MASTER COUNT for each bar. It is
+the single most important gatekeeper against misclassification.
+
+⚠ MASTER COUNT RULE: The K value written in the row-level pre-pass is the
+authoritative chord count for that bar. If PASS 1 of the multi-pass reading
+produces a different count for the same bar, DO NOT silently override the
+pre-pass value. Instead, write:
+
+  COUNT CONFLICT: pre-pass said K, PASS 1 says K'. Recount before proceeding.
+
+Recount the bar from scratch. Write the reconciled count and state which
+reading you are adopting and why. Only after reconciliation may you proceed
+to PASS 2. The pre-pass gatekeeper must never be silently overridden.
+
+Diagonal splits produce exactly 2 chords. If K >= 3 for any bar, diagonal is
+ruled out for that bar permanently — no visual impression of a triangle or
+slanted line can override this.
 
 THE SILENT-DROP TRAP: The most dangerous misread on this page type is
 classifying a Rule 5 bar (K=3: two chords upper, one lower) as a diagonal
 split (K=2). At low scan resolution, the upper-left chord of a Rule 5 bar
 occupies a large region that resembles a triangle, and the vertical divider
 between the two upper chords may be faint. The result is that the beat-2
-chord vanishes from the output with no error -- the JSON looks plausible but
+chord vanishes from the output with no error — the JSON looks plausible but
 is wrong. The only prevention is committing to K before examining any lines.
 
 BAR-COUNTING CASCADE FAILURE: A misclassification in bar N does not stay
@@ -230,6 +243,10 @@ PASS 1 — COUNT
   Commit to N before proceeding.
   Write: CHORDS: N
 
+  If this count differs from the row-level pre-pass count for this bar,
+  do not proceed. Write COUNT CONFLICT and reconcile before continuing
+  (see MASTER COUNT RULE in the chord count pre-pass section above).
+
   This count is the gatekeeper for all subsequent steps.
   If N ≥ 3, diagonal layout is ruled out permanently — do not
   reconsider this regardless of what the lines look like.
@@ -237,38 +254,54 @@ PASS 1 — COUNT
 PASS 2 — LAYOUT
   Identify the subdivision layout using the Mandatory Classification
   Procedure (Steps 1–4 in BAR SUBDIVISION LAYOUT section).
-  Before committing, explicitly name at least two candidate layout
-  types and state why you are rejecting the alternative.
 
-  If N = 2, you MUST write the Q1-CHECK line before considering any
-  other layout. This line is mandatory for every N=2 bar. Skipping
-  it is a protocol violation:
+  For every bar where N = 2, you MUST write the following two lines
+  before naming any layout candidates. Both are mandatory. A bar with
+  N=2 that is missing either line is a protocol violation.
 
-    Q1-CHECK: [Is there a diagonal line from TOP-RIGHT to BOTTOM-LEFT
-               with NO horizontal line present?]
-    Write: Q1: YES → proceed as diagonal candidate
-        or Q1: NO  → proceed to Q2
+    Q1-CHECK: Is there a diagonal line from TOP-RIGHT to BOTTOM-LEFT
+              with NO horizontal line present?
+    Q1: YES → diagonal is a live candidate
+    Q1: NO  → diagonal is ruled out; proceed to Q2
 
-  Only after writing the Q1-CHECK line may you name and reject layout
-  candidates and write the final LAYOUT declaration.
+    LINE-DESC: [describe in one sentence the actual dividing mark(s)
+                you see: orientation, position, whether it spans the
+                full width or only part of the box]
+
+  The LINE-DESC line is mandatory for all N=2 bars regardless of which
+  layout is ultimately chosen. It forces a geometric observation before
+  any layout label is committed. A model that writes a layout without a
+  LINE-DESC for an N=2 bar has skipped this step.
+
+  Examples of valid LINE-DESC entries:
+    LINE-DESC: slanted line running from top-right to bottom-left,
+               no horizontal line visible
+    LINE-DESC: horizontal line spanning full box width at mid-height,
+               no diagonal present
+    LINE-DESC: small framed square visible in bottom-right corner only,
+               no diagonal or horizontal line crossing full width
+
+  Only after writing Q1-CHECK and LINE-DESC may you name and reject
+  layout candidates and write the final LAYOUT declaration.
 
   If LAYOUT = diagonal, you MUST ALSO write the LOWER-STACKING line
-  (see STEP 3 / CHECK B below) before encoding any chords. This line
-  is mandatory for every diagonal bar. Skipping it is a protocol
-  violation.
+  (see STEP 3 / CHECK B below) before encoding any chords. A diagonal
+  bar with no LOWER-STACKING line is a protocol violation.
 
   Write: LAYOUT: [final type]
 
   Example (N=2, diagonal confirmed):
-    Q1: YES — diagonal line visible, no horizontal line
+    Q1: YES — diagonal line confirmed
+    LINE-DESC: slanted line from top-right to bottom-left, no horizontal line
     Candidate A: diagonal — ACCEPTED
-    Candidate B: rule3 — REJECTED (no full-width horizontal line)
+    Candidate B: rule3 — REJECTED (LINE-DESC shows no horizontal line)
     LAYOUT: diagonal
 
-  Example (N=2, diagonal ruled out):
-    Q1: NO — no diagonal line; stacked notation present
-    Candidate A: rule3 — ACCEPTED (horizontal line present)
-    Candidate B: diagonal — REJECTED (Q1 answered NO)
+  Example (N=2, rule3 confirmed):
+    Q1: NO — no diagonal line present
+    LINE-DESC: horizontal line spanning full box width at mid-height
+    Candidate A: rule3 — ACCEPTED (LINE-DESC confirms full-width horizontal)
+    Candidate B: diagonal — REJECTED (Q1 answered NO; LINE-DESC confirms horizontal)
     LAYOUT: rule3
 
   Example (N=3):
@@ -320,6 +353,10 @@ STEP 1 — COUNT THE CHORDS (WRITTEN ANSWER REQUIRED)
   Count the distinct chord symbols visible in the bar box.
   Write the count before proceeding:  CHORDS: N
 
+  If this count differs from the row-level pre-pass count for this bar,
+  write COUNT CONFLICT and reconcile before proceeding (see MASTER COUNT
+  RULE above).
+
   → If N = 1: the bar is undivided. Use plain string. Stop here.
   → If N = 2: the bar may be diagonal, Rule 3, or bottom-right inset.
               Proceed to Step 2.
@@ -336,22 +373,25 @@ STEP 1 — COUNT THE CHORDS (WRITTEN ANSWER REQUIRED)
   line is irrelevant once N ≥ 3 has been established.
 
 STEP 2 — IDENTIFY THE LAYOUT TYPE (WRITTEN ANSWER REQUIRED)
-  Examine the bar box for dividing lines and inset frames. When N = 2,
-  you MUST answer Q1 in writing before evaluating any other question.
-  Work through the following questions in order. Stop at the first match.
+  Examine the bar box for dividing lines and inset frames.
 
-  ⚠ N=2 MANDATORY GATE — Q1-CHECK (written answer required):
-  Before evaluating Q2 or Q3, write:
+  ⚠ N=2 MANDATORY GATES — both written answers required before Q1:
+
+  GATE A — Q1-CHECK:
     Q1-CHECK: Is there a diagonal line from TOP-RIGHT to BOTTOM-LEFT
               with NO horizontal line present?
-    Q1: YES → diagonal is a live candidate; proceed to confirm below.
-    Q1: NO  → diagonal is ruled out; proceed to Q2.
+    Q1: YES → diagonal is a live candidate
+    Q1: NO  → diagonal is ruled out; proceed to Q2
 
-  Writing this line is not optional. It is the primary defence against
-  misclassifying a rule3 bar as diagonal (or vice versa) by pattern-
-  matching "two chords = stacked = rule3" without examining the geometry.
-  A bar with N=2 and no Q1-CHECK line in the scratchpad is a protocol
-  violation.
+  GATE B — LINE-DESC:
+    LINE-DESC: [one sentence describing the actual dividing mark(s) you
+                see — orientation, position, full-width or partial]
+
+  Both GATE A and GATE B are mandatory for every N=2 bar. Missing either
+  is a protocol violation. Only after writing both gates may you work
+  through Q1–Q3 below.
+
+  Work through the following questions in order. Stop at the first match.
 
   Q1: Is N == 2 AND does a single diagonal line run from the TOP-RIGHT corner
       to the BOTTOM-LEFT corner, with no horizontal line present?
@@ -369,8 +409,16 @@ STEP 2 — IDENTIFY THE LAYOUT TYPE (WRITTEN ANSWER REQUIRED)
       any horizontal line crossing the full width?
       → YES: bottom-right inset layout. Go to section A2 below.
 
-  If none of the above match and N = 1: the bar is undivided.
-  Write the answer before proceeding:  LAYOUT-TYPE: [inset | four-square | diagonal | undivided]
+  ⚠ Q3-CHECK (written answer required for N=2 bars where Q1=NO and Q2=NO):
+  If Q1 answered NO and Q2 found no horizontal line, you must explicitly
+  check for a bottom-right inset frame before declaring the bar undivided.
+  Write:
+    Q3-CHECK: [Is a small framed square visible in the bottom-right corner?]
+    Q3: YES → inset layout
+    Q3: NO  → bar is undivided (N=1 expected; recount if N=2)
+
+  Write the answer before proceeding:
+  LAYOUT-TYPE: [inset | four-square | diagonal | undivided]
 
 STEP 3 — BOUNDARY BOX RULE FOR THE BAR SUBDIVISION LAYOUT
 
@@ -399,8 +447,6 @@ STEP 3 — BOUNDARY BOX RULE FOR THE BAR SUBDIVISION LAYOUT
   often stacked vertically within the lower-right triangle: root on top,
   suffix below (or vice versa). They are BOTH below the diagonal and
   together form ONE chord symbol. Read them as a unit.
-  Example: root "B7" stacked above suffix "b5" in the lower triangle
-  → encode as "B7_b5", not as "Am7_b5" for the upper chord.
 
   For every diagonal bar, write the following line in the scratchpad
   before encoding any chords:
@@ -498,7 +544,20 @@ STEP 4 — DECLARE THE RULE (WRITTEN ANSWER REQUIRED)
    one undivided main area. If a framed corner square is visible, it is an
    inset — not a diagonal.
 
-   ⚠ DIAGONAL vs. RULE 4 — most common confusion:
+   ⚠ DIAGONAL vs. RULE 3 — most common N=2 confusion:
+   A diagonal split has ONE slanted line running from TOP-RIGHT to BOTTOM-LEFT,
+   with NO horizontal line. Rule 3 has a straight horizontal line spanning the
+   FULL WIDTH of the box at mid-height, with no diagonal line. These are
+   geometrically opposite: one is slanted corner-to-corner, the other is
+   level and full-width. At low scan resolution a slightly skewed horizontal
+   line can resemble a diagonal, and vice versa. The LINE-DESC written answer
+   (mandatory for all N=2 bars) forces you to describe what you actually see
+   before committing to a layout label. If the line runs corner-to-corner at
+   an angle → diagonal. If the line is horizontal and spans the full width
+   → rule3. If you cannot determine orientation from the scan, flag with "?"
+   and add a notation_notes entry.
+
+   ⚠ DIAGONAL vs. RULE 4 — most common confusion with N=3:
    A diagonal split has ONE slanted line and NO horizontal line.
    Rule 4 (below) has a horizontal line across the full box width PLUS a
    vertical line only in the lower half — producing one chord above and TWO
@@ -614,17 +673,20 @@ reassigned to the next bar. G7 lives in beat 2 of this bar.
 WORKED EXAMPLE — DIAGONAL BAR WITH STACKED LOWER SUFFIX
 ---------------------------------------------------------
 Scenario: a bar box has a diagonal line from TOP-RIGHT to BOTTOM-LEFT.
-Two chord symbols are visible above the diagonal: "Am7". Below the diagonal,
+Two chord symbols are visible: "Am7" above the diagonal. Below the diagonal,
 two lines of text are stacked: "B7" on top, "bs" below.
 
 STEP 1  CHORDS: 2 (Am7 above diagonal; B7+bs below diagonal as one unit)
-        → N = 2. Diagonal is a candidate.
+        → N = 2. Diagonal is a candidate. No COUNT CONFLICT.
 
 STEP 2  Q1-CHECK: Is there a diagonal line from TOP-RIGHT to BOTTOM-LEFT
                   with NO horizontal line present?
         Q1: YES — diagonal line confirmed, no horizontal line.
+        LINE-DESC: slanted line running from top-right corner to bottom-left
+                   corner; no horizontal line visible anywhere in the box.
         Candidate A: diagonal — ACCEPTED
-        Candidate B: rule3 — REJECTED (Q1 answered YES; no horizontal line)
+        Candidate B: rule3 — REJECTED (LINE-DESC shows no horizontal line;
+                              Q1 answered YES)
         LAYOUT: diagonal
 
 STEP 3  CHECK A:
@@ -647,26 +709,58 @@ REPEAT RULES — ALL CASES
 In every case below, ALWAYS write out the actual chord(s) explicitly.
 NEVER use "-", "•", "•/•", "→", or any shorthand in the output JSON.
 
+IDENTIFYING THE REPEAT TYPE (mandatory written check):
+Before expanding any repeat row or bar, you must identify which repeat
+type is present and write it in the scratchpad:
+
+  REPEAT-TYPE: [row-arrow | section-repeat | two-bar-diagonal | bar-repeat | dash]
+
+For rows that begin with a repeat symbol, you must additionally write:
+
+  REPEAT-MARK: [describe exactly what you see — plain arrow, arrow with
+                vertical line to its right, or other mark]
+
+This description is mandatory. The distinction between a plain row arrow
+(→, repeat rule 2) and a section repeat arrow (arrow + vertical line,
+repeat rule 1) is a single thin mark that can disappear at low scan
+resolution. If the mark is ambiguous, write:
+
+  REPEAT-MARK: ambiguous — [describe what is and is not visible]
+
+and choose the more conservative interpretation (row arrow, rule 2),
+flagging the bar-level overrides as uncertain if any are present.
+
 1. FULL SECTION REPEAT (arrow with vertical line between rows):
-   Copy all 8 bars from the most recent section with the same letter verbatim.
+   Copy all bars from the most recent section with the same letter verbatim.
    If any bar in the repeated row has a chord explicitly written, that chord
    overrides the copied bar for that position.
+   REPEAT-TYPE to write: section-repeat
 
-2. ROW ARROW (plain → at the start of a row):
+2. ROW ARROW (plain → at the start of a row, no vertical line):
    Copy the entire previous row of the same section verbatim.
    Override any explicitly written bars.
+   REPEAT-TYPE to write: row-arrow
 
 3. TWO-BAR DIAGONAL (diagonal line spanning two adjacent bar boxes):
    Copy the immediately preceding two bars verbatim into those two bars.
    Distinct from a single-bar diagonal split (which stays within one box).
+   REPEAT-TYPE to write: two-bar-diagonal
 
 4. BAR-LEVEL REPEAT (•/• or similar):
    Copy the immediately preceding bar verbatim.
+   REPEAT-TYPE to write: bar-repeat
+
+   ⚠ BAR-LEVEL REPEAT AT SECTION OPENING: If a bar-level repeat mark (•
+   or •/•) appears as the very first bar of a section, there is no
+   preceding bar within the section. In this case, look back to the last
+   bar of the immediately preceding section and copy that bar. If no
+   preceding section exists, encode as "-" and add a notation_notes entry.
 
 5. DASH (-) in the score:
    Copy the immediately preceding bar verbatim.
    Exception: if "-" appears as the very first bar of a tune with no preceding
-   bar, encode as "-" (genuine rest).
+   bar at all, encode as "-" (genuine rest).
+   REPEAT-TYPE to write: dash
 
 In ALL cases: expand fully in the JSON. Write the chord(s) out. No shortcuts.
 
@@ -698,7 +792,10 @@ When a tune has no chord grid printed:
 SECTION IDs
 -----------
 - Use the section labels printed on the score (A, B, C, verse, chorus, etc.)
-- When a section is repeated, append a counter: A1, A2, A3 etc.
+- The first occurrence of a section is labelled with the letter alone: A, B, C.
+- Each subsequent occurrence of the same letter appends an incrementing integer
+  starting at 1: A1, A2, A3, etc.
+  Example: a 32-bar AABA form produces sections A, A1, B, A2.
 - Each section is exactly one 8-bar row — one flat array of 8 bar entries.
   Never nest sections. One section ID = one row = 8 bars.
 
@@ -736,9 +833,18 @@ RECORDINGS
 ----------
 {
   "artist": string,
-  "year": number,               // 2-digit: 00–29 → 1900–1929, 30–99 → 1930–1999
-  "artist_uncertain": boolean   // omit if false
+  "year": number,
+  "year_uncertain": boolean    // omit if false
 }
+
+Year encoding: years appear as 2-digit numbers in the score margin.
+- 30–99 → 1930–1999
+- 00–29 → interpret in context. If the tune was composed before 1930 or the
+  artist's active period is consistent with the 1900s–1920s, map to 1900–1929.
+  Otherwise (artist active in the 2000s or later) map to 2000–2029.
+- When the decade is genuinely ambiguous from context, encode the raw 2-digit
+  string as a string in a "year_raw" field instead of "year", and set
+  "year_uncertain": true.
 
 
 SPECIAL CASES
