@@ -34,6 +34,27 @@ Return a JSON array. Each tune is one object with this shape:
 }
 
 
+CHORD NOTATION RULES
+--------------------
+- Major 7th: use "7M", e.g. "Eb7M"
+- Minor chord: use "m", e.g. "Cm"
+- Half-diminished: "m7b5", e.g. "Am7b5"
+- Half-diminished: "ø", encode with "m7b5", e.g. "Am7b5"
+- Diminished: "°", e.g. "C°"
+- Augmented dominant: use "#", e.g. "G7#"
+- Raised 11th / #11 / superscript 11+: encode as "#11", e.g. "Eb9#11"
+- Augmented 5th written as superscript "5+": encode inline as #5, e.g. "G7#5" or "Bb7#5"
+- "t" suffix on a chord means "+", which encodes to "#": e.g. "Eb9t" → "Eb#9", "G9t" → "G#9", "F75t" → "F7#5"
+- The notation "E9/14" means E9#11 — the 14th is French/European shorthand for #11
+  (7+7=14). Encode as "E9#11".
+- Chord alterations shown in parentheses () are optional suggestions — omit them including their content.
+  E.g. "Bb9(9b)" → encode as "Bb9", "D9(b5)" → encode as "D9".
+- Pay attention between B and Bb. "B7b5" and "Bb7b5" are not the same. This is English notation not European.
+- If you read bs somewhere, it is likely b5.
+- If uncertain about a chord due to scan quality, append "?" e.g. "Bb7M?"
+
+
+
 BAR REPRESENTATION
 ------------------
 Each bar in a section array is one of two forms:
@@ -52,9 +73,9 @@ chord begins. Never repeat a chord on the next beat if it is a continuation.
 
 BAR SUBDIVISION LAYOUT
 -----------------------
-A bar box can be subdivided in two distinct ways: a DIAGONAL SPLIT or a FOUR-SQUARE
-SPLIT. These are easily confused at low scan resolution. Follow the mandatory
-classification procedure below for every subdivided bar before encoding any chords.
+A bar box can be subdivided in several distinct ways. These are easily confused
+at low scan resolution. Follow the mandatory classification procedure below for
+every subdivided bar before encoding any chords.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 MANDATORY CLASSIFICATION PROCEDURE
@@ -68,49 +89,114 @@ STEP 1 — COUNT THE CHORDS
   Write the count before proceeding:  CHORDS: N
 
   → If N = 1: the bar is undivided. Use plain string. Stop here.
-  → If N = 2: the bar may be diagonal or Rule 3. Proceed to Step 2.
+  → If N = 2: the bar may be diagonal, Rule 3, or bottom-right inset.
+              Proceed to Step 2.
   → If N = 3: the bar must be Rule 4 or Rule 5. Proceed to Step 2.
   → If N = 4: the bar must be Rule 6. Proceed to Step 2.
 
   A diagonal split can only produce 2 chords. If you count 3 or 4 chords,
   a diagonal reading is impossible — do not default to diagonal regardless
   of how the lines appear at low scan resolution.
+  
 
-STEP 2 — CHECK FOR A HORIZONTAL DIVIDING LINE
-  Ask: does a straight horizontal line span the FULL WIDTH of the bar box,
-  cleanly dividing it into a distinct upper half and a distinct lower half?
-  Write the answer before proceeding:  HORIZONTAL: YES or NO
+STEP 2 — IDENTIFY THE LAYOUT TYPE
+  Examine the bar box for dividing lines and inset frames, working through
+  the following questions in order. Stop at the first match.
 
-  → If NO:  the bar is either undivided (N=1) or diagonally split (N=2).
-            Go to section A below.
-  → If YES: the bar uses the four-square layout.
-            Go to section B below.
+  Q1: Is there a small square or rectangle framed in the BOTTOM-RIGHT
+      corner of the box, clearly distinct from the main area?
+      → YES: bottom-right inset layout. Go to section A2 below.
 
-STEP 3 — DECLARE THE LAYOUT
-  Write the layout before encoding any chords:
-  LAYOUT: [undivided | diagonal | rule3 | rule4 | rule5 | rule6]
+  Q2: Does a single diagonal line run from the TOP-RIGHT corner to the
+      BOTTOM-LEFT corner, with no horizontal line present?
+      → YES: diagonal split. Go to section A3 below.
+
+  Q3: Does a straight horizontal line span the FULL WIDTH of the bar box,
+      cleanly dividing it into a distinct upper half and a distinct lower half?
+      → YES: four-square layout. Go to section B below.
+
+  If none of the above match and N = 1: the bar is undivided.
+  Write the answer before proceeding:  LAYOUT-TYPE: [inset | four-square | diagonal | undivided]
+
+STEP 3 — BOUNDARY BOX RULE FOR THE BAR SUBDIVISION LAYOUT
+
+  When a bar is subdivided (diagonal, inset, or four-square), each chord symbol —
+  including any alteration suffixes (b5, #5, b9, #9, m, °, etc.) — must be
+  read only from within that beat's own boundary region. Alterations printed
+  outside a beat's region, even if visually adjacent, belong exclusively to
+  the chord occupying the region where they appear.
+
+  BOUNDARY PROXIMITY — when an alteration symbol appears on or immediately
+  adjacent to a subdivision boundary line (within one glyph-width of the
+  line), assign it to the region whose centroid it is closest to. If this
+  is genuinely indeterminate at scan resolution, append "?" to both
+  candidate chords and record the ambiguity in notation_notes.
+
+  NO HARMONIC INFERENCE — never use chord-type familiarity or harmonic
+  context to resolve boundary ambiguity. The fact that a suffix would
+  produce a common or expected chord type (e.g. b5 completing a
+  half-diminished chord, #5 completing an augmented dominant) is not
+  evidence that the suffix belongs to a neighbouring beat's region.
+  Assign alterations by region geometry only.
+
+  Examples:
+    A bar with a diagonal split where "Am7" appears in the upper-left
+    triangle and "b5" appears in the lower-right triangle: encode beat 1
+    as "Am7" and beat 3 as the chord in the lower-right triangle including
+    the b5 alteration — even though "Am7b5" is a common jazz chord type.
+
+    A four-square split where "D9" is in the upper-left square and "(b5)"
+    is in the upper-right square: "(b5)" belongs to the beat 2 chord, not
+    to beat 1.
+
+    A bottom-right inset where "Gb9" fills the main area and "#" appears
+    inside the inset square: "#" belongs to the inset chord (beat 4), not
+    to the main area chord (beat 1).
+
+  Never "reach across" a subdivision boundary to attach an alteration to a
+  neighbouring beat's chord.
+
+STEP 4 — DECLARE THE RULE
+  Write the rule before encoding any chords:
+  LAYOUT: [undivided | inset | diagonal | rule3 | rule4 | rule5 | rule6]
 
   Only after writing this declaration may you encode the chords.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-A) NO HORIZONTAL DIVIDING LINE → DIAGONAL SPLIT or UNDIVIDED
+A) NO HORIZONTAL DIVIDING LINE → INSET, DIAGONAL, or UNDIVIDED
 
-   A1) UNDIVIDED — one chord, no subdivision lines:
+   A1) UNDIVIDED — one chord, no subdivision lines, no inset frame:
        → chord lasts all 4 beats. Use plain string. Example: "Cm7"
 
-   A2) BOTTOM-RIGHT INSET — no horizontal line; one chord fills the large
-       undivided area; a second chord sits in a small square framed exclusively
-       in the bottom-right corner:
-       → large area chord  = beats 1–3  → encode on beat "1"
+   A2) BOTTOM-RIGHT INSET — no horizontal line, no diagonal line; one chord
+       fills the main area of the box; a second chord sits inside a small
+       square or rectangle framed exclusively in the bottom-right corner.
+       The inset frame is self-contained — it does not extend across the
+       full width or height of the box.
+       → main area chord   = beats 1–3  → encode on beat "1"
        → inset chord       = beat 4     → encode on beat "4"
        Result: { "beats": { "1": "chordA", "4": "chordB" } }
 
+       NOTE: The main area chord may be any chord type. Do not mistake this
+       layout for a diagonal split simply because the main chord occupies a
+       large irregular region. The identifying feature is the small framed
+       square in the bottom-right corner — if that frame is present, this
+       rule applies regardless of how the main area looks.
+
    A3) DIAGONAL SPLIT — a single diagonal line runs from the TOP-RIGHT corner
-       to the BOTTOM-LEFT corner of the box, with NO horizontal line present:
+       to the BOTTOM-LEFT corner of the box, with NO horizontal line and NO
+       bottom-right inset frame present:
        → upper-left triangle  = beats 1+2  → encode on beat "1"
        → lower-right triangle = beats 3+4  → encode on beat "3"
        Result: { "beats": { "1": "chordA", "3": "chordB" } }
+
+   ⚠ DIAGONAL vs. INSET — easy to confuse when scan quality is low:
+   A diagonal split has ONE slanted line dividing the box into two triangles
+   with no framing in any corner. A bottom-right inset has a small square
+   frame in the bottom-right corner only, with the rest of the box forming
+   one undivided main area. If a framed corner square is visible, it is an
+   inset — not a diagonal.
 
    ⚠ DIAGONAL vs. RULE 4 — most common confusion:
    A diagonal split has ONE slanted line and NO horizontal line.
@@ -176,39 +262,7 @@ B) HORIZONTAL DIVIDING LINE PRESENT → FOUR-SQUARE SPLIT (Rules 3–6)
       Result: { "beats": { "1": "chordA", "2": "chordB", "3": "chordC", "4": "chordD" } }
 
 
-BOUNDARY BOX RULE FOR THE BAR SUBDIVISION LAYOUT
--------------------------------------------------
-When a bar is subdivided (diagonal or four-square), each chord symbol —
-including any alteration suffixes (b5, #5, b9, #9, m, °, etc.) — must be
-read only from within that beat's own boundary region. Alterations printed
-outside a beat's region, even if visually adjacent, belong exclusively to
-the chord occupying the region where they appear.
 
-BOUNDARY PROXIMITY — when an alteration symbol appears on or immediately
-adjacent to a subdivision boundary line (within one glyph-width of the
-line), assign it to the region whose centroid it is closest to. If this
-is genuinely indeterminate at scan resolution, append "?" to both
-candidate chords and record the ambiguity in notation_notes.
-
-NO HARMONIC INFERENCE — never use chord-type familiarity or harmonic
-context to resolve boundary ambiguity. The fact that a suffix would
-produce a common or expected chord type (e.g. b5 completing a
-half-diminished chord, #5 completing an augmented dominant) is not
-evidence that the suffix belongs to a neighbouring beat's region.
-Assign alterations by region geometry only.
-
-Examples:
-  A bar with a diagonal split where "Am7" appears in the upper-left
-  triangle and "b5" appears in the lower-right triangle: encode beat 1
-  as "Am7" and beat 3 as the chord in the lower-right triangle including
-  the b5 alteration — even though "Am7b5" is a common jazz chord type.
-
-  A four-square split where "D9" is in the upper-left square and "(b5)"
-  is in the upper-right square: "(b5)" belongs to the beat 2 chord, not
-  to beat 1.
-
-Never "reach across" a subdivision boundary to attach an alteration to a
-neighbouring beat's chord.
 
 
 REPEAT RULES — ALL CASES
@@ -240,23 +294,6 @@ NEVER use "-", "•", "•/•", "→", or any shorthand in the output JSON.
 In ALL cases: expand fully in the JSON. Write the chord(s) out. No shortcuts.
 
 
-CHORD NOTATION RULES
---------------------
-- Major 7th: use "7M", e.g. "Eb7M"
-- Minor chord: use "m", e.g. "Cm"
-- Half-diminished: "m7b5", e.g. "Am7b5"
-- Half-diminished: "ø", encode with "m7b5", e.g. "Am7b5"
-- Diminished: "°", e.g. "C°"
-- Augmented dominant: use "#", e.g. "G7#"
-- Raised 11th / #11 / superscript 11+: encode as "#11", e.g. "Eb9#11"
-- Augmented 5th written as superscript "5+": encode inline as #5, e.g. "G7#5" or "Bb7#5"
-- "t" suffix on a chord means "+", which encodes to "#": e.g. "Eb9t" → "Eb#9", "G9t" → "G#9", "F75t" → "F7#5"
-- The notation "E9/14" means E9#11 — the 14th is French/European shorthand for #11
-  (7+7=14). Encode as "E9#11".
-- Chord alterations shown in parentheses () are optional suggestions — omit them including their content.
-  E.g. "Bb9(9b)" → encode as "Bb9", "D9(b5)" → encode as "D9".
-- Be careful between B and Bb. "B7b5" and "Bb7b5" are not the same.
-- If uncertain about a chord due to scan quality, append "?" e.g. "Bb7M?"
 
 
 VARIANTS (asterisk annotations)
