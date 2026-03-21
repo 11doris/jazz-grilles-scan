@@ -52,7 +52,6 @@ chord begins. Never repeat a chord on the next beat if it is a continuation.
 
 BAR SUBDIVISION LAYOUT
 -----------------------
-
 A bar box can be subdivided in two distinct ways:
 
 A) DIAGONAL SPLIT
@@ -62,14 +61,6 @@ A) DIAGONAL SPLIT
    Result: { "beats": { "1": "chordA", "3": "chordB" } }
 
 B) FOUR-SQUARE SPLIT
-   Key visual distinction before applying any rule:
-   First check whether a horizontal line crosses the full width of the bar box, dividing it into a distinct upper half and lower half.
-
-   No horizontal dividing line → the box is undivided. Only a small inset square may appear in the bottom-right corner. 
-   Apply Rule 1 or Rule 2.
-   Horizontal dividing line present → the box is split into upper and lower halves. The lower half may be further divided 
-   vertically into left and right squares. Apply Rules 3, 4, 5, or 6 depending on how many sub-squares are present.
-
    Two lines (one horizontal, one vertical) divide the box into four squares:
      top-left     = beat 1
      top-right    = beat 2
@@ -79,34 +70,52 @@ B) FOUR-SQUARE SPLIT
    Squares are only drawn and a chord only written when that beat's chord DIFFERS
    from the beat immediately before it. Reading rules:
 
+   KEY VISUAL DISTINCTION — apply this check before selecting a rule:
+   First determine whether a horizontal line crosses the full width of the bar box,
+   dividing it into a distinct upper half and a distinct lower half.
+
+   - NO horizontal dividing line → the box interior is undivided. Only a small
+     inset square may appear framed in the bottom-right corner. Apply Rule 1 or 2.
+
+   - HORIZONTAL DIVIDING LINE PRESENT → the box is split into upper and lower
+     halves. The lower half may be further divided vertically into left and right
+     squares. Apply Rules 3, 4, 5, or 6 depending on how many sub-squares appear.
+
    1. No subdivision lines, one chord written:
       → chord lasts all 4 beats. Use plain string. Example: "Cm7"
 
-   2. The box has NO horizontal dividing line across the middle. Instead, a small square is inset/framed exclusively 
-      in the bottom-right corner, sitting inside an otherwise undivided box. One chord fills the large undivided area; 
-	  one chord sits in the small inset square.
-   	  → large undivided area chord = beats 1, 2, 3 → encode on beat "1"
-	  → bottom-right inset chord = beat 4 → encode on beat "4"
-	  Result: { "beats": { "1": "chordA", "4": "chordB" } }
+   2. NO horizontal dividing line. One chord fills the large undivided box area;
+      one chord sits in a small square inset/framed exclusively in the bottom-right
+      corner. There is no horizontal line splitting the box into halves — the
+      bottom-right square is a small inset within an otherwise undivided box.
+      → large undivided area chord = beats 1, 2, 3  → encode on beat "1"
+      → bottom-right inset chord   = beat 4          → encode on beat "4"
+      Result: { "beats": { "1": "chordA", "4": "chordB" } }
 
-   3. One chord in the UPPER HALF + one chord in the LOWER HALF:
+   3. HORIZONTAL LINE present. One chord in the UPPER HALF + one chord in the
+      LOWER HALF (lower half is not further subdivided vertically):
       → upper chord = beats 1+2  → encode on beat "1"
       → lower chord = beats 3+4  → encode on beat "3"
       Result: { "beats": { "1": "chordA", "3": "chordB" } }
 
-   4. One chord in the UPPER HALF + one chord in LOWER-LEFT + one in LOWER-RIGHT:
+   4. HORIZONTAL LINE present. One chord in the UPPER HALF + the lower half is
+      divided vertically into a LOWER-LEFT square and a LOWER-RIGHT square, each
+      with its own chord:
       → upper chord        = beats 1+2  → encode on beat "1"
       → bottom-left chord  = beat 3     → encode on beat "3"
       → bottom-right chord = beat 4     → encode on beat "4"
       Result: { "beats": { "1": "chordA", "3": "chordB", "4": "chordC" } }
 
-   5. One chord in the UPPER-LEFT + one chord in UPPER-RIGHT + one chord in the LOWER HALF:
-      → top-left chord  = beat 1  → encode on beat "1"
-      → top-right chord = beat 2  → encode on beat "2"
-      → lower chord     = beats 3+4  → encode on beat "3"
+   5. HORIZONTAL LINE present. The upper half is divided vertically into an
+      UPPER-LEFT square and an UPPER-RIGHT square; the lower half has one chord
+      and is not further subdivided:
+      → top-left chord  = beat 1      → encode on beat "1"
+      → top-right chord = beat 2      → encode on beat "2"
+      → lower chord     = beats 3+4   → encode on beat "3"
       Result: { "beats": { "1": "chordA", "2": "chordB", "3": "chordC" } }
 
-   6. One chord in the UPPER-LEFT + one chord in UPPER-RIGHT + one chord in LOWER-LEFT + one in LOWER-RIGHT:
+   6. HORIZONTAL LINE present. Both halves are divided vertically: UPPER-LEFT,
+      UPPER-RIGHT, LOWER-LEFT, LOWER-RIGHT each have their own chord:
       → top-left chord     = beat 1  → encode on beat "1"
       → top-right chord    = beat 2  → encode on beat "2"
       → bottom-left chord  = beat 3  → encode on beat "3"
