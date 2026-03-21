@@ -36,22 +36,81 @@ Return a JSON array. Each tune is one object with this shape:
 
 CHORD NOTATION RULES
 --------------------
-- Major 7th: use "7M", e.g. "Eb7M"
-- Minor chord: use "m", e.g. "Cm"
-- Half-diminished: "m7b5", e.g. "Am7b5"
-- Half-diminished: "ø", encode with "m7b5", e.g. "Am7b5"
+There are specific chord writing rules in these lead sheets.
+- Pay attention between B and Bb. "B7b5" and "Bb7b5" are not the same.
+- This is English notation not European.
+- Major 7th: "7M" is encoded as "M7" e.g. "EbM7"
+- Major 9th: "9M" is encoded as "M9" e.g. "AbM9"
+- Minor chord: "m", e.g. "Cm"
+- Half-diminished: "m7b5", encode as "m7b5"
+- Half-diminished: "ø", encode with "m7b5", e.g. "Am7b5". NOTE: you will not see m7b5 in the lead sheet. If you read it, something is wrong: add a "?"
 - Diminished: "°", e.g. "C°"
-- Augmented dominant: use "#", e.g. "G7#"
-- Raised 11th / #11 / superscript 11+: encode as "#11", e.g. "Eb9#11"
-- Augmented 5th written as superscript "5+": encode inline as #5, e.g. "G7#5" or "Bb7#5"
-- "t" suffix on a chord means "+", which encodes to "#": e.g. "Eb9t" → "Eb#9", "G9t" → "G#9", "F75t" → "F7#5"
-- The notation "E9/14" means E9#11 — the 14th is French/European shorthand for #11
-  (7+7=14). Encode as "E9#11".
-- Chord alterations shown in parentheses () are optional suggestions — omit them including their content.
-  E.g. "Bb9(9b)" → encode as "Bb9", "D9(b5)" → encode as "D9".
-- Pay attention between B and Bb. "B7b5" and "Bb7b5" are not the same. This is English notation not European.
-- If you read bs somewhere, it is likely b5.
+- Augmented dominant: use "_#5", e.g. "G7_#5"
+
+IMPORTANT! You must encode the augmentations as follows to avoid ambiguity.
+NO HARMONIC INFERENCE — never use chord-type familiarity or harmonic context to resolve
+ambiguity of augmentations. Strictly follow the rules stated here.
+
+- Flat 5:  "b5", also seen as "bs", encode as "_b5"
+- Flat 9:  "9b",                    encode as "_b9"
+- Flat 11: "11b",                   encode as "_b11"
+- Flat 13: "13b",                   encode as "_b13"
+- Raised 5:  "5+", also seen as "5t",   encode as "_#5"
+- Raised 9:  "9+", also seen as "9t",   encode as "_#9",  e.g. "A7_#9"
+- Raised 11: "11+", also seen as "11t", encode as "_#11", e.g. "Eb9_#11"
+- Raised 13: "13+", also seen as "13t", encode as "_#13"
+
+- The notation "E9/14" means E9_#11 — the 14th is French/European shorthand for #11
+  (7+7=14). Encode as "E9_#11".
+- Chord alterations shown in parentheses () are optional suggestions — omit them
+  including their content. E.g. "Bb9(9b)" → encode as "Bb9", "D9(b5)" → encode as "D9".
 - If uncertain about a chord due to scan quality, append "?" e.g. "Bb7M?"
+
+
+READING ORDER RULE — ROOT vs. ALTERATION SUFFIX
+------------------------------------------------
+When you read a chord symbol in the score, parse it strictly left-to-right in this order:
+
+  1. ROOT NOTE     — letter A–G, optionally followed by "b" or "#" ONLY if that
+                     accidental immediately precedes a digit or chord-quality letter.
+  2. CHORD QUALITY — m, M, °, ø, etc.
+  3. INTERVAL      — 7, 9, 11, 13
+  4. ALTERATION    — "b" or "+"/t" appearing AFTER the interval digit
+
+A "b" that appears AFTER a digit is always an alteration suffix on that interval.
+It is NEVER part of the root name.
+The position of "b" relative to the digit is the ONLY criterion.
+Never use harmonic context to decide.
+
+Examples:
+  D9b   → root=D,  interval=9,  suffix=b  → encode "D_b9"
+  Db9b  → root=D,  interval=9,  suffix=b  → encode "D_b9"
+  A9b   → root=A,  interval=9,  suffix=b  → encode "A_b9"
+  Ab9   → root=Ab, interval=9,  suffix=b  → encode "Ab_9"
+  Db9   → root=Db, interval=9,  no suffix → encode "Db9"
+  Bb9b  → root=Bb, interval=9,  suffix=b  → encode "Bb_b9"
+  Bb9   → root=Bb, interval=9,  no suffix → encode "Bb9"
+  G7b   → root=G,  interval=7,  suffix=b  → flag as ambiguous, encode "G7_b9?"
+  Ab13b → root=Ab, interval=13, suffix=b  → encode "Ab13_b13"
+  Bm75+ → root=D,  interval=9,  suffix=b  → encode "D_b9" 
+  Ebm7b5 → root=Eb,  interval=5,  suffix=b  → encode "Ebm7_b5"
+  Bb9+  → root=Bb,  interval=9,  suffix=+  → encode "Bb_#5"
+  G713  → root=G,  interval=13,  suffix=none  → encode "G13"
+  
+MULTIPLE SIMULTANEOUS ALTERATIONS
+----------------------------------
+A single chord may carry more than one alteration suffix. Encode all alterations
+present, appended in the order they appear left-to-right (or top-to-bottom if
+stacked). Each alteration uses its own underscore prefix.
+
+Examples:
+  C9b with superscript 11+  → "C_b9_#11"
+  G7 with b5 and b9         → "G7_b5_b9"
+  Eb9 with #11 and b13      → "Eb9_#11_b13"
+
+Apply the BOUNDARY BOX RULE: every alteration suffix must fall within the same
+beat-region as its root chord. Do not reach across a subdivision boundary to
+attach an alteration to a neighbouring beat's chord (see STEP 3 above).
 
 
 
@@ -60,8 +119,7 @@ BAR REPRESENTATION
 Each bar in a section array is one of two forms:
 
 FORM 1 — plain string
-Use when one chord lasts the entire bar.
-  "Dm7"
+Use when one chord lasts the entire bar. Example: "Dm7"
 
 FORM 2 — beat object
 Use when the bar contains more than one chord. The object has a single "beats" key
@@ -103,17 +161,17 @@ STEP 2 — IDENTIFY THE LAYOUT TYPE
   Examine the bar box for dividing lines and inset frames, working through
   the following questions in order. Stop at the first match.
 
-  Q1: Is there a small square or rectangle framed in the BOTTOM-RIGHT
-      corner of the box, clearly distinct from the main area?
-      → YES: bottom-right inset layout. Go to section A2 below.
-
-  Q2: Does a single diagonal line run from the TOP-RIGHT corner to the
+  Q1: Is N == 2 AND Does a single diagonal line run from the TOP-RIGHT corner to the
       BOTTOM-LEFT corner, with no horizontal line present?
       → YES: diagonal split. Go to section A3 below.
 
-  Q3: Does a straight horizontal line span the FULL WIDTH of the bar box,
+  Q2: Does a straight horizontal line span the FULL WIDTH of the bar box,
       cleanly dividing it into a distinct upper half and a distinct lower half?
       → YES: four-square layout. Go to section B below.
+	  
+  Q3: Is N == 2 AND Is there a small square or rectangle framed in the BOTTOM-RIGHT
+      corner of the box, distinct from the main area, without any horizontal line crossing the full width? 
+      → YES: bottom-right inset layout. Go to section A2 below.
 
   If none of the above match and N = 1: the bar is undivided.
   Write the answer before proceeding:  LAYOUT-TYPE: [inset | four-square | diagonal | undivided]
@@ -121,23 +179,23 @@ STEP 2 — IDENTIFY THE LAYOUT TYPE
 STEP 3 — BOUNDARY BOX RULE FOR THE BAR SUBDIVISION LAYOUT
 
   When a bar is subdivided (diagonal, inset, or four-square), each chord symbol —
-  including any alteration suffixes (b5, #5, b9, #9, m, °, etc.) — must be
+  including any alteration suffixes (b5, #5, b9, #9, m, ø, °, etc.) — must be
   read only from within that beat's own boundary region. Alterations printed
   outside a beat's region, even if visually adjacent, belong exclusively to
   the chord occupying the region where they appear.
-
-  BOUNDARY PROXIMITY — when an alteration symbol appears on or immediately
-  adjacent to a subdivision boundary line (within one glyph-width of the
-  line), assign it to the region whose centroid it is closest to. If this
-  is genuinely indeterminate at scan resolution, append "?" to both
-  candidate chords and record the ambiguity in notation_notes.
+ 
+  DIAGONAL SPLIT — alteration below the line:
+  When a bar has a diagonal split, the diagonal is a hard boundary. Any alteration suffix (b5, #5, b9, etc.) that appears below the diagonal line belongs to the lower-right triangle (beat 3), not to the upper-left triangle (beat 1), regardless of how close it appears to the upper chord.
+  The root of the lower chord and its alteration suffix may be stacked vertically or physically separated within the lower-right triangle — read them together as a single chord symbol.
+  Example: "Am7" in the upper-left triangle, "B7" as root and "b5" stacked below it in the lower-right triangle:
+→ encode beat 1 as "Am7", beat 3 as "B7b5"
 
   NO HARMONIC INFERENCE — never use chord-type familiarity or harmonic
   context to resolve boundary ambiguity. The fact that a suffix would
   produce a common or expected chord type (e.g. b5 completing a
   half-diminished chord, #5 completing an augmented dominant) is not
   evidence that the suffix belongs to a neighbouring beat's region.
-  Assign alterations by region geometry only.
+  Assign alterations by region geometry only. Boundary lines are hard geometrical limits.
 
   Examples:
     A bar with a diagonal split where "Am7" appears in the upper-left
@@ -161,10 +219,9 @@ STEP 4 — DECLARE THE RULE
   LAYOUT: [undivided | inset | diagonal | rule3 | rule4 | rule5 | rule6]
 
   Only after writing this declaration may you encode the chords.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-A) NO HORIZONTAL DIVIDING LINE → INSET, DIAGONAL, or UNDIVIDED
+  A) NO HORIZONTAL DIVIDING LINE → INSET, DIAGONAL, or UNDIVIDED
 
    A1) UNDIVIDED — one chord, no subdivision lines, no inset frame:
        → chord lasts all 4 beats. Use plain string. Example: "Cm7"
@@ -217,7 +274,7 @@ A) NO HORIZONTAL DIVIDING LINE → INSET, DIAGONAL, or UNDIVIDED
    Do not default to diagonal.
 
 
-B) HORIZONTAL DIVIDING LINE PRESENT → FOUR-SQUARE SPLIT (Rules 3–6)
+  B) HORIZONTAL DIVIDING LINE PRESENT → FOUR-SQUARE SPLIT (Rules 3–6)
 
    The horizontal line is always present. Additional vertical lines subdivide
    the upper half, the lower half, or both. Choose the rule by counting how
