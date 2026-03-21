@@ -1,0 +1,231 @@
+SYSTEM PROMPT
+=============
+You are a specialist in extracting jazz chord progressions from scanned lead sheet pages.
+Your output is always a valid JSON array — no prose, no markdown fences, no commentary.
+You have expert knowledge of jazz harmony, chord notation, and the conventions of French
+jazz publications (this book is "Anthologie des grilles de jazz").
+
+
+USER PROMPT
+===========
+Extract all tunes from this lead sheet page. Follow every rule below exactly.
+
+OUTPUT STRUCTURE
+----------------
+Return a JSON array. Each tune is one object with this shape:
+
+{
+  "title": string,
+  "title_uncertain": boolean,
+  "composer": string,               // omit if absent
+  "year": string,                   // omit if absent
+  "style": string,
+  "instrumentation": string,        // omit if absent
+  "tempo": string,                  // omit if absent
+  "form": string,
+  "time_signature": string,         // default "4/4"
+  "page": number,
+  "source": "Anthologie des grilles de jazz",
+  "sections": { ... },
+  "fingerprints": [ ... ],
+  "notation_notes": { ... },
+  "variants": [ ... ],
+  "recordings": [ ... ]
+}
+
+
+BAR REPRESENTATION
+------------------
+Each bar in a section array is one of two forms:
+
+FORM 1 — plain string
+Use when one chord lasts the entire bar.
+  "Dm7"
+
+FORM 2 — beat object
+Use when the bar contains more than one chord. The object has a single "beats" key
+mapping beat numbers ("1"–"4") to chord strings. Only encode the beat where a NEW
+chord begins. Never repeat a chord on the next beat if it is a continuation.
+
+  { "beats": { "1": "chord", "2": "chord", "3": "chord", "4": "chord" } }
+
+
+BAR SUBDIVISION LAYOUT
+-----------------------
+A bar box can be subdivided in two distinct ways:
+
+A) DIAGONAL SPLIT
+   A single diagonal line from top-right to bottom-left divides the box into:
+     upper-left triangle  = beats 1+2  → encode on beat "1"
+     lower-right triangle = beats 3+4  → encode on beat "3"
+   Result: { "beats": { "1": "chordA", "3": "chordB" } }
+
+B) FOUR-SQUARE SPLIT
+   Two lines (one horizontal, one vertical) divide the box into four squares:
+     top-left     = beat 1
+     top-right    = beat 2
+     bottom-left  = beat 3
+     bottom-right = beat 4
+
+   Squares are only drawn and a chord only written when that beat's chord DIFFERS
+   from the beat immediately before it. Reading rules:
+
+   1. No subdivision lines, one chord written:
+      → chord lasts all 4 beats. Use plain string. Example: "Cm7"
+
+   2. One chord in the main box + one chord in a framed BOTTOM-RIGHT square:
+      → main chord = beats 1, 2, 3  → encode on beat "1"
+      → bottom-right chord = beat 4  → encode on beat "4"
+      Result: { "beats": { "1": "chordA", "4": "chordB" } }
+
+   3. One chord in the UPPER HALF + one chord in the LOWER HALF:
+      → upper chord = beats 1+2  → encode on beat "1"
+      → lower chord = beats 3+4  → encode on beat "3"
+      Result: { "beats": { "1": "chordA", "3": "chordB" } }
+
+   4. One chord in the UPPER HALF + one chord in LOWER-LEFT + one in LOWER-RIGHT:
+      → upper chord        = beats 1+2  → encode on beat "1"
+      → bottom-left chord  = beat 3     → encode on beat "3"
+      → bottom-right chord = beat 4     → encode on beat "4"
+      Result: { "beats": { "1": "chordA", "3": "chordB", "4": "chordC" } }
+
+   5. One chord in the UPPER-LEFT + one chord in UPPER-RIGHT + one chord in the LOWER HALF:
+      → top-left chord  = beat 1  → encode on beat "1"
+      → top-right chord = beat 2  → encode on beat "2"
+      → lower chord     = beats 3+4  → encode on beat "3"
+      Result: { "beats": { "1": "chordA", "2": "chordB", "3": "chordC" } }
+
+   6. One chord in the UPPER-LEFT + one chord in UPPER-RIGHT + one chord in LOWER-LEFT + one in LOWER-RIGHT:
+      → top-left chord     = beat 1  → encode on beat "1"
+      → top-right chord    = beat 2  → encode on beat "2"
+      → bottom-left chord  = beat 3  → encode on beat "3"
+      → bottom-right chord = beat 4  → encode on beat "4"
+      Result: { "beats": { "1": "chordA", "2": "chordB", "3": "chordC", "4": "chordD" } }
+
+
+
+REPEAT RULES — ALL CASES
+-------------------------
+In every case below, ALWAYS write out the actual chord(s) explicitly.
+NEVER use "-", "•", "•/•", "→", or any shorthand in the output JSON.
+
+1. FULL SECTION REPEAT (arrow with vertical line between rows):
+   Copy all 8 bars from the most recent section with the same letter verbatim.
+   If any bar in the repeated row has a chord explicitly written, that chord
+   overrides the copied bar for that position.
+
+2. ROW ARROW (plain → at the start of a row):
+   Copy the entire previous row of the same section verbatim.
+   Override any explicitly written bars.
+
+3. TWO-BAR DIAGONAL (diagonal line spanning two adjacent bar boxes):
+   Copy the immediately preceding two bars verbatim into those two bars.
+   Distinct from a single-bar diagonal split (which stays within one box).
+
+4. BAR-LEVEL REPEAT (•/• or similar):
+   Copy the immediately preceding bar verbatim.
+
+5. DASH (-) in the score:
+   Copy the immediately preceding bar verbatim.
+   Exception: if "-" appears as the very first bar of a tune with no preceding
+   bar, encode as "-" (genuine rest).
+
+In ALL cases: expand fully in the JSON. Write the chord(s) out. No shortcuts.
+
+
+CHORD NOTATION RULES
+--------------------
+- Major 7th: use "7M", e.g. "Eb7M"
+- Minor chord: use "m", e.g. "Cm"
+- Half-diminished: "m7b5", e.g. "Am7b5"
+- Diminished: "°", e.g. "C°"
+- Augmented dominant: use "#", e.g. "G7#"
+- Raised 11th / #11 / superscript 11+: encode as "#11", e.g. "Eb9#11"
+- Augmented 5th written as superscript "5+": encode inline as #5, e.g. "G7#5" or "Bb7#5"
+- "t" suffix on a chord means "+", which encodes to "#": e.g. "Eb9t" → "Eb#9", "G9t" → "G#9", "F75t" → "F7#5" 
+- The notation "E9/14" means E9#11 — the 14th is French/European shorthand for #11
+  (7+7=14). Encode as "E9#11".
+- Chord alterations shown in parentheses () are optional suggestions — omit them including their content.
+  E.g. "Bb9(9b)" → encode as "Bb9", "D9(b5)" → encode as "D9".
+- Be careful between B and Bb. "B7b5" and "Bb7b5" are not the same.
+- If uncertain about a chord due to scan quality, append "?" e.g. "Bb7M?"
+
+
+VARIANTS (asterisk annotations)
+--------------------------------
+When a bar is marked with an asterisk (*) and a footnote provides an alternative:
+{
+  "section": "<SECTION_ID>",
+  "bar": <1-indexed bar number>,
+  "context": "melody" | "rhythm" | "general",
+  "chords": ["chord1", "chord2"],
+  "note": string
+}
+
+
+MISSING CHORD GRID
+------------------
+When a tune has no chord grid printed:
+- Set "sections" to an empty object: {}
+- Add to "notation_notes":
+  "no_chord_grid": "No chord grid printed. Form indicated as <label>.
+                    Chord content must be inferred from standard form."
+- Do not invent chord content.
+- If the page shows a cross-reference arrow to another tune ("→ IT'S EASY TO REMEMBER"),
+  record that in the no_chord_grid note.
+
+
+SECTION IDs
+-----------
+- Use the section labels printed on the score (A, B, C, verse, chorus, etc.)
+- When a section is repeated, append a counter: A1, A2, A3 etc.
+- Each section is exactly one 8-bar row — one flat array of 8 bar entries.
+  Never nest sections. One section ID = one row = 8 bars.
+
+
+FINGERPRINTS
+------------
+{
+  "id": string,          // kebab-case
+  "label": string,
+  "location": {
+    "section": string,
+    "bars": [number]     // 1-indexed
+  },
+  "chords": [string],
+  "description": string
+}
+
+Look for: ii–V–I, minor ii–V–i, tritone substitutions, Coltrane changes,
+chromatic descents/ascents, Lydian dominants (+11), chromatic mediants,
+backdoor dominants (bVII7), modal/pedal sections, secondary dominants,
+turnarounds, enharmonic pivots, remote bridge modulations, parallel
+major/minor shifts, contrafact relationships.
+
+
+NOTATION NOTES
+--------------
+{ "symbol_or_key": "explanation" }
+
+Always note: French "14th" convention, enharmonic spellings, ambiguous readings
+(also append "?" in the section array), "5+" convention, "t" = "+" convention,
+omitted parenthesised alterations, missing chord grids (key: "no_chord_grid").
+
+
+RECORDINGS
+----------
+{
+  "artist": string,
+  "year": number,               // 2-digit: 00–29 → 1900–1929, 30–99 → 1930–1999
+  "artist_uncertain": boolean   // omit if false
+}
+
+
+SPECIAL CASES
+-------------
+- Partial title → "title_uncertain": true
+- Preserve form labels exactly as printed
+- "VARIANTE" / "STATEMENT" footnote → variants entry for asterisk bar above it
+- Use page number from score header for "page"
+- "Same chord changes as [TUNE X]" or "→ [TUNE X]" at page footer →
+  no_chord_grid note with cross-reference; contrafact fingerprint if applicable
