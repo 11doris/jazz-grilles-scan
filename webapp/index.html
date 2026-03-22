@@ -192,8 +192,15 @@ html, body { height: 100%; font-family: system-ui, -apple-system, sans-serif; fo
 .copy-section-btn { font-size: 11px; color: var(--text-muted); cursor: pointer; background: none; border: none; padding: 1px 3px; }
 .copy-section-btn:hover { color: var(--accent); }
 
-/* ── Undo button ──────────────────────────────────────────────────────────── */
-#undo-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+/* ── Undo / Redo buttons ──────────────────────────────────────────────────── */
+#undo-btn:disabled, #redo-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Section drag-and-drop ────────────────────────────────────────────────── */
+.drag-handle { font-size: 14px; cursor: grab; color: #ccc; padding: 1px 2px; user-select: none; line-height: 1; }
+.drag-handle:hover { color: #888; }
+.drag-handle:active { cursor: grabbing; }
+.section-block.dragging { opacity: 0.4; }
+.section-block.drag-over { box-shadow: 0 -3px 0 0 var(--accent); margin-top: 3px; }
 
 /* ── Corrected tunes ──────────────────────────────────────────────────────── */
 .corrected-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; flex-shrink: 0; }
@@ -212,6 +219,7 @@ html, body { height: 100%; font-family: system-ui, -apple-system, sans-serif; fo
     <span id="progress-label-tb"></span>
     <div class="spacer"></div>
     <button class="tb-btn" id="undo-btn" onclick="undo()" disabled>↩ Undo</button>
+    <button class="tb-btn" id="redo-btn" onclick="redo()" disabled>↪ Redo</button>
     <button class="tb-btn" id="download-btn" onclick="downloadOutput()">⬇ Download JSON</button>
     <button class="tb-btn" onclick="document.getElementById('corrected-file-input').click()">📥 Import Corrected</button>
     <button class="tb-btn danger" onclick="confirmReset()">↺ Reset Session</button>
@@ -312,8 +320,9 @@ let state = {
   correctedTitles: [], // lowercase trimmed titles from imported corrected_tunes.json
 };
 
-// ─── Undo stack ────────────────────────────────────────────────────────────
+// ─── Undo / Redo stacks ────────────────────────────────────────────────────
 let undoStack = [];
+let redoStack = [];
 const UNDO_MAX = 10;
 
 function pushUndo() {
@@ -324,28 +333,55 @@ function pushUndo() {
   if (undoStack.length > 0 && JSON.stringify(undoStack[undoStack.length - 1]) === JSON.stringify(snap)) return;
   undoStack.push(snap);
   if (undoStack.length > UNDO_MAX) undoStack.shift();
-  updateUndoBtn();
+  redoStack = []; // new mutation clears redo history
+  updateUndoRedoBtns();
 }
 
 function undo() {
   if (undoStack.length === 0) return;
+  // Save current state for redo
+  const current = deepClone(state.tunes[state.currentIndex]);
+  redoStack.push(current);
+  if (redoStack.length > UNDO_MAX) redoStack.shift();
+  // Restore previous state
   const snap = undoStack.pop();
   state.tunes[state.currentIndex] = snap;
   renderTune(state.currentIndex);
   saveState();
-  updateUndoBtn();
+  updateUndoRedoBtns();
+}
+
+function redo() {
+  if (redoStack.length === 0) return;
+  // Save current state for undo
+  const current = deepClone(state.tunes[state.currentIndex]);
+  undoStack.push(current);
+  if (undoStack.length > UNDO_MAX) undoStack.shift();
+  // Restore redo state
+  const snap = redoStack.pop();
+  state.tunes[state.currentIndex] = snap;
+  renderTune(state.currentIndex);
+  saveState();
+  updateUndoRedoBtns();
 }
 
 function clearUndoStack() {
   undoStack = [];
-  updateUndoBtn();
+  redoStack = [];
+  updateUndoRedoBtns();
 }
 
-function updateUndoBtn() {
-  const btn = document.getElementById('undo-btn');
-  if (!btn) return;
-  btn.disabled = undoStack.length === 0;
-  btn.textContent = undoStack.length > 0 ? `↩ Undo (${undoStack.length})` : '↩ Undo';
+function updateUndoRedoBtns() {
+  const undoBtn = document.getElementById('undo-btn');
+  const redoBtn = document.getElementById('redo-btn');
+  if (undoBtn) {
+    undoBtn.disabled = undoStack.length === 0;
+    undoBtn.textContent = undoStack.length > 0 ? `↩ Undo (${undoStack.length})` : '↩ Undo';
+  }
+  if (redoBtn) {
+    redoBtn.disabled = redoStack.length === 0;
+    redoBtn.textContent = redoStack.length > 0 ? `↪ Redo (${redoStack.length})` : '↪ Redo';
+  }
 }
 
 // ─── Startup ───────────────────────────────────────────────────────────────
@@ -426,7 +462,7 @@ function persistSession() {
     collectEdits();
   }
   saveState();
-  updateUndoBtn();
+  updateUndoRedoBtns();
 }
 
 function clearSession() {
@@ -652,6 +688,8 @@ function toggleUncertain() {
 }
 
 // ─── Chord Grid ─────────────────────────────────────────────────────────────
+let dragSectionKey = null; // tracks the key of the section being dragged
+
 function renderChordGrid(t) {
   const grid = document.getElementById('chord-grid');
   grid.innerHTML = '';
@@ -665,6 +703,47 @@ function buildSectionBlock(sKey, bars) {
   const block = document.createElement('div');
   block.className = 'section-block';
   block.dataset.section = sKey;
+  block.setAttribute('draggable', 'true');
+
+  // ── Drag-and-drop ──────────────────────────────────────────────
+  block.addEventListener('dragstart', (e) => {
+    if (!e.target.closest('.drag-handle')) { e.preventDefault(); return; }
+    dragSectionKey = block.dataset.section;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', dragSectionKey);
+    setTimeout(() => block.classList.add('dragging'), 0); // defer so browser captures preview before opacity change
+  });
+  block.addEventListener('dragend', () => {
+    block.classList.remove('dragging');
+    dragSectionKey = null;
+    document.querySelectorAll('.section-block').forEach(b => b.classList.remove('drag-over'));
+  });
+  block.addEventListener('dragover', (e) => {
+    if (!dragSectionKey || dragSectionKey === block.dataset.section) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    document.querySelectorAll('.section-block').forEach(b => b.classList.remove('drag-over'));
+    block.classList.add('drag-over');
+  });
+  block.addEventListener('dragleave', (e) => {
+    if (!e.relatedTarget || !block.contains(e.relatedTarget)) block.classList.remove('drag-over');
+  });
+  block.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const fromKey = dragSectionKey;
+    const toKey = block.dataset.section;
+    if (!fromKey || fromKey === toKey) return;
+    persistSession(); // undo checkpoint
+    const t = state.tunes[state.currentIndex];
+    const entries = Object.entries(t.sections);
+    const fromIdx = entries.findIndex(([k]) => k === fromKey);
+    const [movedEntry] = entries.splice(fromIdx, 1);
+    const toIdx = entries.findIndex(([k]) => k === toKey);
+    entries.splice(toIdx, 0, movedEntry);
+    t.sections = Object.fromEntries(entries);
+    renderChordGrid(t);
+    saveState();
+  });
 
   const sectionRow = document.createElement('div');
   sectionRow.className = 'section-row';
@@ -672,6 +751,10 @@ function buildSectionBlock(sKey, bars) {
   // Label column
   const labelCol = document.createElement('div');
   labelCol.className = 'section-label-col';
+  const dragHandle = document.createElement('span');
+  dragHandle.className = 'drag-handle';
+  dragHandle.title = 'Drag to reorder';
+  dragHandle.textContent = '⠿';
   const labelEl = document.createElement('span');
   labelEl.className = 'section-label';
   labelEl.contentEditable = 'true';
@@ -714,6 +797,7 @@ function buildSectionBlock(sKey, bars) {
     renderChordGrid(t);
     saveState();
   };
+  labelCol.appendChild(dragHandle);
   labelCol.appendChild(labelEl);
   labelCol.appendChild(delBtn);
   labelCol.appendChild(copyBtn);
@@ -812,62 +896,48 @@ function buildBeatCell(beat, chord) {
 
   const chordWrap = document.createElement('div');
   chordWrap.className = 'chord-wrap';
+  chordWrap.style.cursor = 'text';
 
-  if (chord !== null) {
-    // Chord symbol (editable)
-    const sym = document.createElement('span');
-    sym.className = 'chord-sym';
-    sym.contentEditable = 'true';
-    sym.textContent = chord;
-    sym.setAttribute('spellcheck', 'false');
-    sym.oninput = debounce(() => persistSession(), 400);
-    sym.onblur = () => {
-      if (!sym.textContent.trim()) {
-        // Remove chord when cleared
-        const box = cell.closest('.bar-box');
-        cell.replaceWith(buildBeatCell(beat, null));
-        updateBoxMulti(box);
-        persistSession();
-      }
-    };
-    chordWrap.appendChild(sym);
-
-    // Delete button
-    const delBtn = document.createElement('button');
-    delBtn.className = 'chord-del';
-    delBtn.title = 'Remove chord';
-    delBtn.textContent = '×';
-    delBtn.onclick = () => {
-      const box = cell.closest('.bar-box');
-      const newCell = buildBeatCell(beat, null);
-      cell.replaceWith(newCell);
-      updateBoxMulti(box);
-      persistSession();
-    };
-    cell.appendChild(delBtn);
-  } else {
-    // Empty slot: clicking anywhere in chord-wrap creates an editable field
-    const addBtn = document.createElement('button');
-    addBtn.className = 'add-chord-btn';
-    addBtn.title = 'Add chord';
-    addBtn.textContent = '+';
-    chordWrap.appendChild(addBtn);
-    chordWrap.style.cursor = 'text';
-    chordWrap.onclick = () => {
-      const newCell = buildBeatCell(beat, '');
-      cell.replaceWith(newCell);
-      const sym = newCell.querySelector('.chord-sym');
-      if (sym) sym.focus();
-      updateBoxMulti(newCell.closest('.bar-box'));
-    };
-  }
+  // Always render a contenteditable span so Tab navigation lands directly here.
+  // Empty chords show a "+" placeholder via CSS [contenteditable]:empty:before.
+  const sym = document.createElement('span');
+  sym.className = 'chord-sym';
+  sym.contentEditable = 'true';
+  sym.textContent = chord || '';
+  sym.setAttribute('spellcheck', 'false');
+  sym.setAttribute('data-placeholder', '+');
+  sym.oninput = debounce(() => {
+    const hasChord = !!sym.textContent.trim();
+    // Hide/show the delete button depending on whether there's a chord
+    delBtn.style.display = hasChord ? '' : 'none';
+    updateBoxMulti(cell.closest('.bar-box'));
+    persistSession();
+  }, 400);
+  chordWrap.appendChild(sym);
   cell.appendChild(chordWrap);
+
+  // Delete button — shown on hover via CSS, but hidden via inline style when chord is empty
+  const delBtn = document.createElement('button');
+  delBtn.className = 'chord-del';
+  delBtn.title = 'Remove chord';
+  delBtn.textContent = '×';
+  if (!chord || !chord.trim()) delBtn.style.display = 'none';
+  delBtn.onclick = (e) => {
+    e.stopPropagation();
+    sym.textContent = '';
+    delBtn.style.display = 'none';
+    updateBoxMulti(cell.closest('.bar-box'));
+    persistSession();
+    sym.focus();
+  };
+  cell.appendChild(delBtn);
+
   return cell;
 }
 
 function updateBoxMulti(box) {
   if (!box) return;
-  const filled = box.querySelectorAll('.chord-sym').length;
+  const filled = [...box.querySelectorAll('.chord-sym')].filter(s => s.textContent.trim()).length;
   box.classList.toggle('multi', filled >= 2);
 }
 
@@ -1164,9 +1234,12 @@ function loadCorrectedFile(event) {
 
 // ─── Boot ───────────────────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
-  if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
     e.preventDefault();
     undo();
+  } else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+    e.preventDefault();
+    redo();
   }
 });
 init();
