@@ -131,6 +131,53 @@ does not match what the section structure predicts, recount before proceeding.
 If you mess up this step, everything will be wrong. Do not skip this step.
 
 
+⚠ STACKED-SUFFIX CASCADE FAILURE (critical new trap — read carefully)
+----------------------------------------------------------------------
+A diagonal-split bar contains exactly 2 chords: one in the upper-left triangle
+and one in the lower-right triangle. The lower-right chord symbol is often
+split across two lines of text within the lower triangle: the root (and quality/
+interval) on the upper line, and the alteration suffix on the line below it.
+
+Because the suffix line prints near the BASELINE of the upper-left chord symbol,
+it can visually appear to belong to the upper chord. This creates the illusion
+that the bar contains THREE chord symbols (upper chord, "suffix" that looks like
+a separate chord, lower root). The model then miscounts K=3, rules out diagonal,
+misclassifies the bar as Rule 5 or Rule 4, and — most dangerously — treats the
+actual next bar's chord as still being inside the current bar.
+
+THE RESULT IS A BAR-SHIFT CASCADE: every bar from that point onward is read one
+position too early. The final bar of the row appears to be "missing" because the
+row ran out of boxes before the shifted reading completed. This is a catastrophic
+error that corrupts the entire section.
+
+MANDATORY DEFENCE — for every diagonal bar where the lower triangle contains
+text on two lines, you MUST write the following in the scratchpad BEFORE
+committing to any chord count:
+
+  LOWER-LINE-CHECK: The lower triangle contains [describe the two lines].
+                    Both lines are below the diagonal → they form ONE chord.
+                    The suffix on the lower line belongs to the lower-right
+                    chord, NOT to the upper-left chord.
+                    Chord count for this bar: 2, not 3.
+
+The key question to ask for EVERY diagonal bar:
+  "Is there any text in the lower-right triangle that sits on a second line
+   below the root? If yes, that second line is an alteration suffix on the
+   lower chord — it is NOT a separate chord and it does NOT belong to the
+   upper chord."
+
+Concrete example of the error pattern (do not repeat this mistake):
+  Bar contains: Am7 (upper-left), diagonal line, B7 (lower-right top line),
+  b5 (lower-right bottom line — the alteration suffix on B7).
+  WRONG reading: K=3, upper=Am7_b5 (suffix pulled across diagonal), lower=B7
+    → this generates a phantom Rule 5 bar and shifts all subsequent bars.
+  CORRECT reading: K=2, upper=Am7, lower=B7_b5
+    → both "B7" and "b5" are below the diagonal; they form one chord B7_b5.
+
+This trap is the #1 cause of bar-shift cascade failure in these lead sheets.
+Apply the LOWER-LINE-CHECK to every diagonal bar without exception.
+
+
 CHORD NOTATION RULES
 ---------------------
 There are specific chord writing rules in these lead sheets.
@@ -244,6 +291,13 @@ PASS 1 — COUNT
   Commit to N before proceeding.
   Write: CHORDS: N
 
+  ⚠ BEFORE COMMITTING TO N FOR ANY DIAGONAL-LOOKING BAR: perform the
+  LOWER-LINE-CHECK described in the STACKED-SUFFIX CASCADE FAILURE section
+  above. Ask explicitly: "Does the lower-right triangle contain two lines of
+  text that together form a single chord (root on top, suffix below)?" If yes,
+  those two lines count as ONE chord symbol, not two. Only commit to N after
+  answering this question.
+
   If this count differs from the row-level pre-pass count for this bar,
   do not proceed. Write COUNT CONFLICT and reconcile before continuing
   (see MASTER COUNT RULE in the chord count pre-pass section above).
@@ -351,6 +405,13 @@ STEP 1 — COUNT THE CHORDS (WRITTEN ANSWER REQUIRED)
   Count the distinct chord symbols visible in the bar box.
   Write the count before proceeding:  CHORDS: N
 
+  ⚠ BEFORE WRITING THIS COUNT for any bar that appears to have a diagonal:
+  Apply the LOWER-LINE-CHECK: inspect the lower-right triangle for text
+  on two lines. If the lower triangle has a root on one line and a suffix
+  on the line below, those two lines are ONE chord symbol. Do not count
+  them as two. Failure to apply this check is the most common cause of
+  the bar-shift cascade error described in STACKED-SUFFIX CASCADE FAILURE.
+
   If this count differs from the row-level pre-pass count for this bar,
   write COUNT CONFLICT and reconcile before proceeding (see MASTER COUNT
   RULE above).
@@ -406,8 +467,8 @@ STEP 2 — IDENTIFY THE LAYOUT TYPE (WRITTEN ANSWER REQUIRED)
       even when it is faint. Look for it actively. Two chords sharing one
       half of the box is proof that the horizontal line exists.
       ⚠ If Q2 = YES and N = 2, do not proceed. Write COUNT CONFLICT and
-      recount — a horizontal line with only 2 chords indicates a likely
-      miscount (missed vertical divider).
+      recount — a horizontal line with only 2 chords means a vertical
+      divider was missed.
 
   Q3: Is N == 2 AND is there a small square or rectangle framed in the
       BOTTOM-RIGHT corner of the box, distinct from the main area, without
@@ -483,9 +544,9 @@ STEP 3 — BOUNDARY BOX RULE FOR THE BAR SUBDIVISION LAYOUT
     the upper chord's text.
   Concrete example (do not infer from harmony — read geometry only):
     Bar contains: Am7 (upper-left), diagonal line, B7 (lower-right, top of
-    stack), bs (lower-right, bottom of stack)
-    WRONG: upper=Am7_b5, lower=B7  ← bs was pulled across the diagonal
-    CORRECT: upper=Am7, lower=B7_b5  ← bs is below the diagonal, stacked
+    stack), b5 (lower-right, bottom of stack)
+    WRONG: upper=Am7_b5, lower=B7  ← b5 was pulled across the diagonal
+    CORRECT: upper=Am7, lower=B7_b5  ← b5 is below the diagonal, stacked
     under B7
 
   Write the LOWER-STACKING answer before encoding:
@@ -664,10 +725,15 @@ reassigned to the next bar. G7 lives in beat 2 of this bar.
 WORKED EXAMPLE — DIAGONAL BAR WITH STACKED LOWER SUFFIX
 ---------------------------------------------------------
 Scenario: a bar box has a diagonal line from TOP-RIGHT to BOTTOM-LEFT.
-Two chord symbols are visible: "Am7" above the diagonal. Below the diagonal,
-two lines of text are stacked: "B7" on top, "bs" below.
+In the upper-left triangle: "Am7". In the lower-right triangle: two lines
+of text, "B7" on top and "b5" below.
 
-STEP 1  CHORDS: 2 (Am7 above diagonal; B7+bs below diagonal as one unit)
+LOWER-LINE-CHECK (performed before committing to N):
+  The lower triangle contains two lines: "B7" (root+interval) and "b5"
+  (alteration suffix). Both are below the diagonal. They form ONE chord.
+  Chord count for this bar: 2, not 3.
+
+STEP 1  CHORDS: 2 (Am7 above diagonal; B7+b5 below diagonal as one unit)
         → N = 2. Diagonal is a candidate. No COUNT CONFLICT.
 
 STEP 2  Q1-CHECK: Is there a diagonal line from TOP-RIGHT to BOTTOM-LEFT
@@ -680,17 +746,37 @@ STEP 2  Q1-CHECK: Is there a diagonal line from TOP-RIGHT to BOTTOM-LEFT
 
 STEP 3  CHECK A:
         UPPER-LEFT (beat 1): Am7 — above the diagonal
-        LOWER-RIGHT (beat 3): B7, bs — both below the diagonal
+        LOWER-RIGHT (beat 3): B7, b5 — both below the diagonal
 
         CHECK B — LOWER-STACKING:
-        LOWER-STACKING: YES — "B7" and "bs" are both below the diagonal
-        and form one chord. "bs" = flat-5 suffix → encode B7_b5.
-        WRONG reading rejected: Am7_b5 (would pull "bs" across the diagonal).
+        LOWER-STACKING: YES — "B7" and "b5" are both below the diagonal
+        and form one chord. "b5" = flat-5 suffix → encode B7_b5.
+        WRONG reading rejected: Am7_b5 (would pull "b5" across the diagonal
+        and miscounting the bar as 3 chords, causing a bar-shift cascade).
 
 STEP 4  LAYOUT: diagonal
         → beat 1 = "Am7"
         → beat 3 = "B7_b5"
         Encode: { "beats": { "1": "Am7", "3": "B7_b5" } }
+
+
+END-OF-ROW SANITY CHECK (mandatory after encoding every row)
+-------------------------------------------------------------
+After encoding all bars in a row, perform this final check before moving
+to the next row:
+
+  ROW-SANITY: I encoded N bars. The form declares M bars per section.
+              N == M? [YES / NO — if NO, recount from scratch]
+
+If N ≠ M, do not proceed. Return to the bar boundary pre-pass and recount.
+A bar-shift cascade failure will always manifest as the wrong number of bars
+encoded in a row. This check is the last line of defence before the error
+propagates into the JSON.
+
+Also verify: the total number of chord symbols encoded across the row equals
+the total number of chord symbols counted in the chord count pre-pass. If the
+totals differ, a chord was silently dropped or duplicated — find it before
+proceeding.
 
 
 REPEAT RULES — ALL CASES
