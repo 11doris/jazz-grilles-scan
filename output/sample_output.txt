@@ -1,0 +1,867 @@
+[
+  {
+    "title": "Riverboat Shuffle",
+    "title_uncertain": false,
+    "composer": "Hoagy Carmichael – Irving Mills",
+    "year": "1924",
+    "style": "DIXIELAND",
+    "tempo": "MEDIUM FAST",
+    "form": "16 A A' B A'",
+    "time_signature": "4/4",
+    "page": 340,
+    "source": null,
+    "sections": {
+      "intro": [
+        {
+          "bar": 1,
+          "beats": { "1": "Am", "3": "E7" }
+        },
+        {
+          "bar": 2,
+          "beats": { "1": "Am", "3": "Am" }
+        },
+        {
+          "bar": 3,
+          "beats": { "1": "Am" }
+        },
+        {
+          "bar": 4,
+          "beats": { "1": "Am", "3": "E7" }
+        }
+      ],
+      "A": [
+        { "bar": 1, "beats": { "1": "Am" } },
+        { "bar": 2, "beats": { "1": "Dm" } },
+        { "bar": 3, "beats": { "1": "Am", "3": "E7" } },
+        { "bar": 4, "beats": { "1": "Am", "3": "Am" } },
+        { "bar": 5, "beats": { "1": "Am" } },
+        { "bar": 6, "beats": { "1": "Dm" } },
+        { "bar": 7, "beats": { "1": "Am", "3": "E7" } },
+        { "bar": 8, "beats": { "1": "Am" } },
+        { "bar": 9, "beats": { "1": "A7" } },
+        { "bar": 10, "beats": { "1": "Dm" } },
+        { "bar": 11, "beats": { "1": "A7" } },
+        { "bar": 12, "beats": { "1": "Dm" } },
+        { "bar": 13, "beats": { "1": "Am" } },
+        { "bar": 14, "beats": { "1": "Dm" } },
+        { "bar": 15, "beats": { "1": "Am", "3": "E7" } },
+        { "bar": 16, "beats": { "1": "Am", "3": "C7" } }
+      ],
+      "B": [
+        { "bar": 1, "beats": { "1": "F" } },
+        { "bar": 2, "beats": { "1": "F" } },
+        { "bar": 3, "beats": { "1": "C7" } },
+        { "bar": 4, "beats": { "1": "C7" } },
+        { "bar": 5, "beats": { "1": "F" } },
+        { "bar": 6, "beats": { "1": "F" } },
+        { "bar": 7, "beats": { "1": "C7" } },
+        { "bar": 8, "beats": { "1": "C7" } },
+        { "bar": 9, "beats": { "1": "F7" } },
+        { "bar": 10, "beats": { "1": "F7" } },
+        { "bar": 11, "beats": { "1": "Bb" } },
+        { "bar": 12, "beats": { "1": "Bb" } },
+        { "bar": 13, "beats": { "1": "G7" } },
+        { "bar": 14, "beats": { "1": "G7" } },
+        { "bar": 15, "beats": { "1": "C7" } },
+        { "bar": 16, "beats": { "1": "C7" } }
+      ],
+      "A1": [
+        { "bar": 1, "beats": { "1": "F" } },
+        { "bar": 2, "beats": { "1": "F" } },
+        { "bar": 3, "beats": { "1": "C7" } },
+        { "bar": 4, "beats": { "1": "C7" } },
+        { "bar": 5, "beats": { "1": "F7" } },
+        { "bar": 6, "beats": { "1": "F7" } },
+        { "bar": 7, "beats": { "1": "Bb", "3": "F7" } },
+        { "bar": 8, "beats": { "1": "Bb" } }
+      ],
+      "C": [
+        { "bar": 1, "beats": { "1": "Bb" } },
+        { "bar": 2, "beats": { "1": "Bbm" } },
+        { "bar": 3, "beats": { "1": "F" } },
+        { "bar": 4, "beats": { "1": "Eb7", "3": "D7" } },
+        { "bar": 5, "beats": { "1": "G7" } },
+        { "bar": 6, "beats": { "1": "C7" } },
+        { "bar": 7, "beats": { "1": "F" } },
+        { "bar": 8, "beats": { "1": "F" } }
+      ]
+    },
+    "fingerprints": [
+      {
+        "id": "riverboat-shuffle-chromatic-descent-turnaround",
+        "label": "Chromatic descent in C section",
+        "location": { "section": "C", "bars": [3, 4] },
+        "chords": ["F", "Eb7", "D7"],
+        "description": "Brief chromatic descent through Eb7–D7 before the G7 turnaround; typical Dixieland passing motion."
+      },
+      {
+        "id": "riverboat-shuffle-ii-v-i",
+        "label": "ii–V–I in F",
+        "location": { "section": "C", "bars": [5, 6, 7] },
+        "chords": ["G7", "C7", "F"],
+        "description": "Standard ii–V–I cadence closing the tag chorus in F major."
+      }
+    ],
+    "recordings": [
+      { "artist": "J.Teagarden", "year": 1954 },
+      { "artist": "A.Rollini", "year": 1925 },
+      { "artist": "R.Nichols", "year": 1927 },
+      { "artist": "S.Bechet", "year": 1924 },
+      { "artist": "E.Condon", "year": 1953 },
+      { "artist": "Casa Loma", "year": 1939 },
+      { "artist": "H.Carmichael", "year": 1938 },
+      { "artist": "Sh.Jones", "year": 1925 },
+      { "artist": "R.Wolverines", "year": 1924 },
+      { "artist": "Al.Trumbauer", "year": 1949 },
+      { "artist": "W.B.Davison", "year": 1962 },
+      { "artist": "A.Bauduc", "year": 1957 }
+    ]
+  },
+  {
+    "title": "Riverside Blues",
+    "title_uncertain": false,
+    "composer": "Thomas \"Georgia Tom\" Dorsey – Richard M. Jones",
+    "year": "1923",
+    "style": "NEW ORLEANS",
+    "tempo": "MEDIUM SLOW",
+    "form": "12 BAR BLUES",
+    "time_signature": "4/4",
+    "page": 340,
+    "source": null,
+    "sections": {
+      "chorus1": [
+        { "bar": 1, "beats": { "1": "F" } },
+        { "bar": 2, "beats": { "1": "F", "3": "C7" } },
+        { "bar": 3, "beats": { "1": "F" } },
+        { "bar": 4, "beats": { "1": "F7" } },
+        { "bar": 5, "beats": { "1": "Bb" } },
+        { "bar": 6, "beats": { "1": "Bb", "3": "C7" } },
+        { "bar": 7, "beats": { "1": "C7" } },
+        { "bar": 8, "beats": { "1": "C7" } },
+        { "bar": 9, "beats": { "1": "F", "3": "Bb" } },
+        { "bar": 10, "beats": { "1": "F" } },
+        { "bar": 11, "beats": { "1": "F" } },
+        { "bar": 12, "beats": { "1": "F" } }
+      ],
+      "chorus2": [
+        { "bar": 1, "beats": { "1": "F" } },
+        { "bar": 2, "beats": { "1": "C7" } },
+        { "bar": 3, "beats": { "1": "F" } },
+        { "bar": 4, "beats": { "1": "A7" } },
+        { "bar": 5, "beats": { "1": "Bb" } },
+        { "bar": 6, "beats": { "1": "Bbm" } },
+        { "bar": 7, "beats": { "1": "C7" } },
+        { "bar": 8, "beats": { "1": "C7" } },
+        { "bar": 9, "beats": { "1": "F", "3": "Bb" } },
+        { "bar": 10, "beats": { "1": "F" } },
+        { "bar": 11, "beats": { "1": "F" } },
+        { "bar": 12, "beats": { "1": "F" } }
+      ],
+      "chorus3": [
+        { "bar": 1, "beats": { "1": "F" } },
+        { "bar": 2, "beats": { "1": "F", "3": "C7" } },
+        { "bar": 3, "beats": { "1": "F" } },
+        { "bar": 4, "beats": { "1": "F7" } },
+        { "bar": 5, "beats": { "1": "Bb" } },
+        { "bar": 6, "beats": { "1": "Bb", "3": "C7" } },
+        { "bar": 7, "beats": { "1": "F" } },
+        { "bar": 8, "beats": { "1": "D7" } },
+        { "bar": 9, "beats": { "1": "G7" } },
+        { "bar": 10, "beats": { "1": "C7" } },
+        { "bar": 11, "beats": { "1": "F", "3": "Bb" } },
+        { "bar": 12, "beats": { "1": "F" } }
+      ],
+      "coda": [
+        { "bar": 1, "beats": { "1": "C7" } },
+        { "bar": 2, "beats": { "1": "C7" } },
+        { "bar": 3, "beats": { "1": "C7", "3": "F" } }
+      ]
+    },
+    "fingerprints": [
+      {
+        "id": "riverside-blues-chromatic-minor-iv",
+        "label": "Minor IV (Bbm) in chorus 2",
+        "location": { "section": "chorus2", "bars": [6] },
+        "chords": ["Bbm"],
+        "description": "Substitution of minor iv for IV in bar 6 of the blues — a Storyville/New Orleans coloring."
+      },
+      {
+        "id": "riverside-blues-secondary-dominant-a7",
+        "label": "Secondary dominant A7 in chorus 2",
+        "location": { "section": "chorus2", "bars": [4] },
+        "chords": ["A7"],
+        "description": "A7 as V/Dm (secondary dominant) in bar 4, replacing the expected F7 IV chord."
+      }
+    ],
+    "recordings": [
+      { "artist": "G.Rolling", "year": 1942 },
+      { "artist": "M.Spanier", "year": 1949 },
+      { "artist": "C.Lewis", "year": 1951 },
+      { "artist": "G.Kings", "year": 1934 },
+      { "artist": "Sad.Miller", "year": 1947 },
+      { "artist": "G.Moore", "year": 1934 },
+      { "artist": "Oliver", "year": 1923 },
+      { "artist": "Firehouse", "year": 1942 },
+      { "artist": "Dixieland Rhythm", "year": 1960 },
+      { "artist": "T.Lightfoot", "year": 1960 }
+    ]
+  },
+  {
+    "title": "Robbins Nest",
+    "title_uncertain": false,
+    "composer": "Sir Charles Thompson – Illinois Jacquet – Bob Russell",
+    "year": "1947",
+    "style": "SWING",
+    "tempo": "MEDIUM",
+    "form": "32 A A B A",
+    "time_signature": "4/4",
+    "page": 340,
+    "source": null,
+    "notation_notes": {
+      "truncated": "Only 16 bars (sections A and A1) visible on page 340; sections B and final A not shown."
+    },
+    "sections": {
+      "A": [
+        { "bar": 1, "beats": { "1": "Db" } },
+        { "bar": 2, "beats": { "1": "Db" } },
+        { "bar": 3, "beats": { "1": "A9" } },
+        { "bar": 4, "beats": { "1": "A9" } },
+        { "bar": 5, "beats": { "1": "Fm7", "3": "E°" } },
+        { "bar": 6, "beats": { "1": "Ebm7", "3": "Ab7" } },
+        { "bar": 7, "beats": { "1": "Db" } },
+        { "bar": 8, "beats": { "1": "Db" } }
+      ],
+      "A1": [
+        { "bar": 1, "beats": { "1": "F7" } },
+        { "bar": 2, "beats": { "1": "F7" } },
+        { "bar": 3, "beats": { "1": "Bb7" } },
+        { "bar": 4, "beats": { "1": "Bb7" } },
+        { "bar": 5, "beats": { "1": "Eb7" } },
+        { "bar": 6, "beats": { "1": "Eb7" } },
+        { "bar": 7, "beats": { "1": "Ab7" } },
+        { "bar": 8, "beats": { "1": "Ab7" } }
+      ]
+    },
+    "fingerprints": [
+      {
+        "id": "robbins-nest-tritone-chain",
+        "label": "Chain of dominant 7ths descending by 5ths",
+        "location": { "section": "A1", "bars": [1, 2, 3, 4, 5, 6, 7, 8] },
+        "chords": ["F7", "F7", "Bb7", "Bb7", "Eb7", "Eb7", "Ab7", "Ab7"],
+        "description": "Descending cycle-of-fifths dominant seventh chain: F7–Bb7–Eb7–Ab7 resolving to Db tonic. Classic bebop/swing harmonic vocabulary."
+      },
+      {
+        "id": "robbins-nest-half-dim-ii-v",
+        "label": "Half-dim ii–V in section A",
+        "location": { "section": "A", "bars": [5, 6] },
+        "chords": ["Fm7", "E°", "Ebm7", "Ab7"],
+        "description": "Bar 5: Fm7/E° (chromatic voice-leading from F down to E°), bar 6: Ebm7/Ab7 = minor ii–V leading back to Db."
+      }
+    ],
+    "recordings": [
+      { "artist": "Buckner", "year": 1955 },
+      { "artist": "Clayton", "year": 1952 },
+      { "artist": "Jacquet", "year": 1959 },
+      { "artist": "Griffin", "year": 1961 },
+      { "artist": "Davis", "year": 1947 },
+      { "artist": "Basie", "year": 1947 },
+      { "artist": "H.Jones", "year": 1977 },
+      { "artist": "Garner", "year": 1957 },
+      { "artist": "J.Garner", "year": 1957 }
+    ]
+  },
+  {
+    "title": "River Stay Way from My Door",
+    "title_uncertain": false,
+    "composer": "Harry Woods – Mort Dixon",
+    "year": "1931",
+    "style": "STANDARD",
+    "tempo": "MEDIUM",
+    "form": "32 A A B A",
+    "time_signature": "4/4",
+    "page": 341,
+    "source": null,
+    "sections": {
+      "A": [
+        { "bar": 1, "beats": { "1": "Eb" } },
+        { "bar": 2, "beats": { "1": "Eb", "3": "Eb7" } },
+        { "bar": 3, "beats": { "1": "Ab", "3": "A°" } },
+        { "bar": 4, "beats": { "1": "Eb" } },
+        { "bar": 5, "beats": { "1": "F7" } },
+        { "bar": 6, "beats": { "1": "B7", "3": "Bb7" } },
+        { "bar": 7, "beats": { "1": "Eb" } },
+        { "bar": 8, "beats": { "1": "Fm7", "3": "Bb7" } }
+      ],
+      "A1": [
+        { "bar": 1, "beats": { "1": "Eb" } },
+        { "bar": 2, "beats": { "1": "Eb", "3": "Eb7" } },
+        { "bar": 3, "beats": { "1": "Ab", "3": "A°" } },
+        { "bar": 4, "beats": { "1": "Eb" } },
+        { "bar": 5, "beats": { "1": "F7" } },
+        { "bar": 6, "beats": { "1": "B7", "3": "Bb7" } },
+        { "bar": 7, "beats": { "1": "Eb", "3": "Cm7" } },
+        { "bar": 8, "beats": { "1": "Am7?", "3": "D7" } }
+      ],
+      "B": [
+        { "bar": 1, "beats": { "1": "Gm" } },
+        { "bar": 2, "beats": { "1": "Gm" } },
+        { "bar": 3, "beats": { "1": "Gm" } },
+        { "bar": 4, "beats": { "1": "Gm" } },
+        { "bar": 5, "beats": { "1": "C9" } },
+        { "bar": 6, "beats": { "1": "Bb" } },
+        { "bar": 7, "beats": { "1": "F7" } },
+        { "bar": 8, "beats": { "1": "Fm7", "3": "Bb7" } }
+      ],
+      "A2": [
+        { "bar": 1, "beats": { "1": "Eb" } },
+        { "bar": 2, "beats": { "1": "Eb", "3": "Eb7" } },
+        { "bar": 3, "beats": { "1": "Ab", "3": "A°" } },
+        { "bar": 4, "beats": { "1": "Eb" } },
+        { "bar": 5, "beats": { "1": "F7" } },
+        { "bar": 6, "beats": { "1": "B7", "3": "Bb7" } },
+        { "bar": 7, "beats": { "1": "Eb" } },
+        { "bar": 8, "beats": { "1": "Fm7", "3": "Bb7" } }
+      ]
+    },
+    "variants": [
+      {
+        "section": "A1",
+        "bar": 8,
+        "context": "general",
+        "chords": ["Am7?", "D7"],
+        "note": "Bar 8 of second A section (second ending): Am7?/D7 — Am7 root uncertain in Eb context; possibly AbM7 or a chromatic approach chord leading to bridge."
+      },
+      {
+        "section": "A",
+        "bar": 6,
+        "context": "general",
+        "chords": ["B7", "Bb7"],
+        "note": "Bar 6 diagonal: B7 (tritone approach) resolving to Bb7 (dominant of Eb). Chromatic approach from above."
+      }
+    ],
+    "fingerprints": [
+      {
+        "id": "river-stay-chromatic-approach-b7-bb7",
+        "label": "Chromatic upper-neighbor dominant",
+        "location": { "section": "A", "bars": [6] },
+        "chords": ["B7", "Bb7"],
+        "description": "B7 as chromatic upper neighbor approaching Bb7 (V7 of Eb) — tritone sub relationship; typical of 1930s arranging practice."
+      },
+      {
+        "id": "river-stay-passing-dim",
+        "label": "Chromatic passing diminished",
+        "location": { "section": "A", "bars": [3] },
+        "chords": ["Ab", "A°"],
+        "description": "Ab major moving to A° — chromatic passing diminished connecting IV to the returning tonic; a common Tin Pan Alley device."
+      }
+    ],
+    "recordings": [
+      { "artist": "D.Brubeck", "year": 1960 },
+      { "artist": "F.Sinatra", "year": 1958 },
+      { "artist": "Boswell Sisters", "year": 1960 },
+      { "artist": "B.Chester", "year": 1940 },
+      { "artist": "L.Waters", "year": 1931 },
+      { "artist": "Dixie Serenaders", "year": 1931 },
+      { "artist": "J.Rushing", "year": 1958 },
+      { "artist": "Haston's Orchestra", "year": 1931 }
+    ]
+  },
+  {
+    "title": "Rock-a-Bye Your Baby with a Dixie Melody",
+    "title_uncertain": false,
+    "composer": "Jean Schwartz – Sam M. Lewis – Joe Young",
+    "year": "1918",
+    "style": "STANDARD",
+    "tempo": "MEDIUM",
+    "form": "32 A B A' C",
+    "time_signature": "4/4",
+    "page": 341,
+    "source": null,
+    "sections": {
+      "A": [
+        { "bar": 1, "beats": { "1": "C7M", "3": "Dm7" } },
+        { "bar": 2, "beats": { "1": "Em7", "3": "Eb°" } },
+        { "bar": 3, "beats": { "1": "Dm7", "3": "G7" } },
+        { "bar": 4, "beats": { "1": "Dm7", "3": "C#°" } },
+        { "bar": 5, "beats": { "1": "Dm7" } },
+        { "bar": 6, "beats": { "1": "G7" } },
+        { "bar": 7, "beats": { "1": "C" } },
+        { "bar": 8, "beats": { "1": "D7", "3": "G7" } }
+      ],
+      "B": [
+        { "bar": 1, "beats": { "1": "DmM7" } },
+        { "bar": 2, "beats": { "1": "Dm7", "3": "G7" } },
+        { "bar": 3, "beats": { "1": "C7M" } },
+        { "bar": 4, "beats": { "1": "Em7", "3": "A7" } },
+        { "bar": 5, "beats": { "1": "G" } },
+        { "bar": 6, "beats": { "1": "Am7", "3": "D7" } },
+        { "bar": 7, "beats": { "1": "Dm7" } },
+        { "bar": 8, "beats": { "1": "G7" } }
+      ],
+      "A1": [
+        { "bar": 1, "beats": { "1": "C7M", "3": "Dm7" } },
+        { "bar": 2, "beats": { "1": "Em7", "3": "Eb°" } },
+        { "bar": 3, "beats": { "1": "Dm7", "3": "G7" } },
+        { "bar": 4, "beats": { "1": "Dm7", "3": "C#°" } },
+        { "bar": 5, "beats": { "1": "Dm7" } },
+        { "bar": 6, "beats": { "1": "G7", "3": "F7" } },
+        { "bar": 7, "beats": { "1": "E7" } },
+        { "bar": 8, "beats": { "1": "E7" } }
+      ],
+      "C": [
+        { "bar": 1, "beats": { "1": "Ab9" } },
+        { "bar": 2, "beats": { "1": "Ab9" } },
+        { "bar": 3, "beats": { "1": "D9" } },
+        { "bar": 4, "beats": { "1": "D9", "3": "D#°" } },
+        { "bar": 5, "beats": { "1": "C7M", "3": "Dm7" } },
+        { "bar": 6, "beats": { "1": "Em7", "3": "Am7" } },
+        { "bar": 7, "beats": { "1": "D7", "3": "G7" } },
+        { "bar": 8, "beats": { "1": "C" } }
+      ]
+    },
+    "variants": [
+      {
+        "section": "A",
+        "bar": 1,
+        "context": "melody",
+        "chords": ["C7M", "Dm7", "D#m7"],
+        "note": "VARIANT for bars 1, 17 (A' bar 1), and 29 (C bar 5): C7M with Dm7/D#m7 chromatic inner-voice variant — for statement of melody."
+      }
+    ],
+    "fingerprints": [
+      {
+        "id": "rock-a-bye-dmin-major7-opening",
+        "label": "Minor-major 7th tonic minor coloring",
+        "location": { "section": "B", "bars": [1] },
+        "chords": ["DmM7"],
+        "description": "Section B opens with DmM7 — tonic minor with major 7th — creating a sophisticated color shift from C major to C minor/Dm before returning to diatonic harmony."
+      },
+      {
+        "id": "rock-a-bye-bVI7-approach-C",
+        "label": "bVI7 approach to dominant area",
+        "location": { "section": "C", "bars": [1, 2] },
+        "chords": ["Ab9", "Ab9"],
+        "description": "Ab9 (bVI7 in C) launches section C — a backdoor-dominant-flavored approach chord, adding chromatic color before the D9 and final cadence."
+      },
+      {
+        "id": "rock-a-bye-chromatic-passing-dims",
+        "label": "Chromatic passing diminished chords",
+        "location": { "section": "A", "bars": [2, 4] },
+        "chords": ["Em7", "Eb°", "Dm7", "C#°"],
+        "description": "Eb° and C#° serve as chromatic passing diminished chords between diatonic ii–V steps — a trademark 1920s harmonic decoration."
+      }
+    ],
+    "recordings": [
+      { "artist": "S.Rollins", "year": 1958 },
+      { "artist": "W.Sweatman", "year": 1918 },
+      { "artist": "R.Brown", "year": 1966 },
+      { "artist": "W.Herman", "year": 1966 },
+      { "artist": "E.Hines", "year": 1963 },
+      { "artist": "S.Davis Jr", "year": 1966 },
+      { "artist": "A.Franklin", "year": 1961 }
+    ]
+  },
+  {
+    "title": "Roll On Mississippi, Roll On",
+    "title_uncertain": false,
+    "composer": "Eugene West – James McCaffrey – Dave Ringle",
+    "year": "1931",
+    "style": "STANDARD",
+    "tempo": "FAST",
+    "form": "24 A A B (VERSE) + 40 A B A' C D (CHORUS)",
+    "time_signature": "4/4",
+    "page": 341,
+    "source": null,
+    "sections": {
+      "verse_A": [
+        { "bar": 1, "beats": { "1": "FmM7" } },
+        { "bar": 2, "beats": { "1": "Fm7", "3": "Dm7?" } },
+        { "bar": 3, "beats": { "1": "Bbm6" } },
+        { "bar": 4, "beats": { "1": "Bbm6" } },
+        { "bar": 5, "beats": { "1": "C7" } },
+        { "bar": 6, "beats": { "1": "C7" } },
+        { "bar": 7, "beats": { "1": "Fm" } },
+        { "bar": 8, "beats": { "1": "Fm" } }
+      ],
+      "verse_A1": [
+        { "bar": 1, "beats": { "1": "FmM7" } },
+        { "bar": 2, "beats": { "1": "Fm7", "3": "Dm7?" } },
+        { "bar": 3, "beats": { "1": "Bbm6" } },
+        { "bar": 4, "beats": { "1": "Bbm6" } },
+        { "bar": 5, "beats": { "1": "C7" } },
+        { "bar": 6, "beats": { "1": "C7" } },
+        { "bar": 7, "beats": { "1": "Fm" } },
+        { "bar": 8, "beats": { "1": "Fm" } }
+      ],
+      "verse_B": [
+        { "bar": 1, "beats": { "1": "Eb7" } },
+        { "bar": 2, "beats": { "1": "Eb7" } },
+        { "bar": 3, "beats": { "1": "Ab" } },
+        { "bar": 4, "beats": { "1": "Ab", "3": "A°" } },
+        { "bar": 5, "beats": { "1": "Eb?" } },
+        { "bar": 6, "beats": { "1": "F7", "3": "Bb7" } },
+        { "bar": 7, "beats": { "1": "Eb", "3": "Eb°" } },
+        { "bar": 8, "beats": { "1": "Eb7" } }
+      ],
+      "A": [
+        { "bar": 1, "beats": { "1": "Ab6" } },
+        { "bar": 2, "beats": { "1": "Ab6" } },
+        { "bar": 3, "beats": { "1": "Db9" } },
+        { "bar": 4, "beats": { "1": "Db9", "3": "Bb7#5" } },
+        { "bar": 5, "beats": { "1": "Ab6" } },
+        { "bar": 6, "beats": { "1": "Ab6" } },
+        { "bar": 7, "beats": { "1": "Bb7" } },
+        { "bar": 8, "beats": { "1": "Bb7" } }
+      ],
+      "B": [
+        { "bar": 1, "beats": { "1": "Eb7", "3": "Bb7?" } },
+        { "bar": 2, "beats": { "1": "F#°", "3": "Eb7" } },
+        { "bar": 3, "beats": { "1": "Eb7" } },
+        { "bar": 4, "beats": { "1": "Eb7#5" } },
+        { "bar": 5, "beats": { "1": "Ab", "3": "Eb7" } },
+        { "bar": 6, "beats": { "1": "F°", "3": "Ab" } },
+        { "bar": 7, "beats": { "1": "D°", "3": "Eb7" } },
+        { "bar": 8, "beats": { "1": "D°", "3": "Eb7" } }
+      ],
+      "A1": [
+        { "bar": 1, "beats": { "1": "Ab6" } },
+        { "bar": 2, "beats": { "1": "Ab6" } },
+        { "bar": 3, "beats": { "1": "Db9" } },
+        { "bar": 4, "beats": { "1": "Db9", "3": "Eb7#5" } },
+        { "bar": 5, "beats": { "1": "Ab6" } },
+        { "bar": 6, "beats": { "1": "Ab6" } },
+        { "bar": 7, "beats": { "1": "C7" } },
+        { "bar": 8, "beats": { "1": "C7" } }
+      ],
+      "C": [
+        { "bar": 1, "beats": { "1": "A°" } },
+        { "bar": 2, "beats": { "1": "Gb°" } },
+        { "bar": 3, "beats": { "1": "C°" } },
+        { "bar": 4, "beats": { "1": "A°" } },
+        { "bar": 5, "beats": { "1": "B°" } },
+        { "bar": 6, "beats": { "1": "Ab°" } },
+        { "bar": 7, "beats": { "1": "D°" } },
+        { "bar": 8, "beats": { "1": "B°", "3": "Eb7#5" } }
+      ],
+      "D": [
+        { "bar": 1, "beats": { "1": "Ab6" } },
+        { "bar": 2, "beats": { "1": "Ab6" } },
+        { "bar": 3, "beats": { "1": "F7" } },
+        { "bar": 4, "beats": { "1": "F7" } },
+        { "bar": 5, "beats": { "1": "Bb7" } },
+        { "bar": 6, "beats": { "1": "Eb7" } },
+        { "bar": 7, "beats": { "1": "Ab" } },
+        { "bar": 8, "beats": { "1": "Ab" } }
+      ]
+    },
+    "variants": [
+      {
+        "section": "verse_A",
+        "bar": 2,
+        "context": "general",
+        "chords": ["Fm7", "Dm7?"],
+        "note": "Diagonal bar 2: Fm7 upper / Dm7? lower. Dm7 unusual in Fm context — possibly Db7 (bVI) or scan artifact. Flagged uncertain."
+      },
+      {
+        "section": "B",
+        "bar": 1,
+        "context": "general",
+        "chords": ["Eb7", "Bb7?"],
+        "note": "Diagonal bar 1 of chorus B: Eb7 upper / Bb7? lower. Bb7 as subdominant preparation in Ab context is possible."
+      }
+    ],
+    "fingerprints": [
+      {
+        "id": "roll-on-diminished-sequence-C",
+        "label": "Sequential diminished chord motion in section C",
+        "location": { "section": "C", "bars": [1, 2, 3, 4, 5, 6, 7, 8] },
+        "chords": ["A°", "Gb°", "C°", "A°", "B°", "Ab°", "D°", "B°"],
+        "description": "Entire section C consists of diminished seventh chords cycling through chromatic positions — a rare, harmonically dense passage evoking 1930s novelty/stride orchestration."
+      },
+      {
+        "id": "roll-on-aug5-dominant-approach",
+        "label": "Augmented 5th dominants as tension builders",
+        "location": { "section": "A", "bars": [4] },
+        "chords": ["Db9", "Bb7#5"],
+        "description": "Db9 moving to Bb7#5 in bar 4 of A sections: the augmented fifth on Bb7 creates unresolved tension before the return to Ab6 tonic — characteristic of the fast, flashy FAST style indicated."
+      },
+      {
+        "id": "roll-on-minor-major-verse-opening",
+        "label": "Minor-major 7th opening in verse",
+        "location": { "section": "verse_A", "bars": [1] },
+        "chords": ["FmM7"],
+        "description": "Verse opens with FmM7 (minor chord with major 7th), creating a sophisticated, slightly dark color before resolving to Fm7."
+      }
+    ],
+    "recordings": [
+      { "artist": "D.Evans", "year": 1931 },
+      { "artist": "R.Evans", "year": 1931 },
+      { "artist": "Sharkey and Co.", "year": 1931 },
+      { "artist": "Dr.Johnston", "year": 1931 },
+      { "artist": "B.Selvin", "year": 1931 },
+      { "artist": "Boswell Sisters", "year": 1954 },
+      { "artist": "D.Deacon", "year": 1931 },
+      { "artist": "P.Johnson", "year": 1931 },
+      { "artist": "J.Wilbur", "year": 1931 },
+      { "artist": "N.Snooks", "year": 1931 }
+    ]
+  },
+  {
+    "title": "Rockin' Chair",
+    "title_uncertain": false,
+    "composer": "Hoagy Carmichael – H.C.",
+    "year": "1929",
+    "style": "STANDARD",
+    "tempo": "MEDIUM SLOW",
+    "form": "32 A B C A'",
+    "time_signature": "4/4",
+    "page": 342,
+    "source": null,
+    "sections": {
+      "A": [
+        { "bar": 1, "beats": { "1": "Eb", "3": "Ebm6?" } },
+        { "bar": 2, "beats": { "1": "Bbm7", "3": "Eb7" } },
+        { "bar": 3, "beats": { "1": "AbM7" } },
+        { "bar": 4, "beats": { "1": "Db9" } },
+        { "bar": 5, "beats": { "1": "Eb", "3": "Db7?" } },
+        { "bar": 6, "beats": { "1": "C7" } },
+        { "bar": 7, "beats": { "1": "F7" } },
+        { "bar": 8, "beats": { "1": "Fm7", "3": "Bb7" } }
+      ],
+      "B": [
+        { "bar": 1, "beats": { "1": "Eb", "3": "Eb6?" } },
+        { "bar": 2, "beats": { "1": "Cm" } },
+        { "bar": 3, "beats": { "1": "Am7?" } },
+        { "bar": 4, "beats": { "1": "Gm", "3": "C7" } },
+        { "bar": 5, "beats": { "1": "F7" } },
+        { "bar": 6, "beats": { "1": "F7" } },
+        { "bar": 7, "beats": { "1": "Fm7", "3": "Bb7?" } },
+        { "bar": 8, "beats": { "1": "Eb" } }
+      ],
+      "C": [
+        { "bar": 1, "beats": { "1": "Ab7" } },
+        { "bar": 2, "beats": { "1": "Ab7" } },
+        { "bar": 3, "beats": { "1": "Eb" } },
+        { "bar": 4, "beats": { "1": "Eb" } },
+        { "bar": 5, "beats": { "1": "Am7?", "3": "D7" } },
+        { "bar": 6, "beats": { "1": "Gm", "3": "Cm7" } },
+        { "bar": 7, "beats": { "1": "F7" } },
+        { "bar": 8, "beats": { "1": "Fm7", "3": "Bb7" } }
+      ],
+      "A1": [
+        { "bar": 1, "beats": { "1": "Eb", "3": "EbM6?" } },
+        { "bar": 2, "beats": { "1": "Bbm7", "3": "Eb7" } },
+        { "bar": 3, "beats": { "1": "AbM7" } },
+        { "bar": 4, "beats": { "1": "Db9" } },
+        { "bar": 5, "beats": { "1": "Eb", "3": "Cm" } },
+        { "bar": 6, "beats": { "1": "F7", "3": "EbM7" } },
+        { "bar": 7, "beats": { "1": "Eb" } },
+        { "bar": 8, "beats": { "1": "Eb" } }
+      ]
+    },
+    "variants": [
+      {
+        "section": "A",
+        "bar": 1,
+        "context": "general",
+        "chords": ["Eb", "Ebm6?"],
+        "note": "Bar 1 diagonal lower chord reads as Ebm6 — unusual in Eb major context. Possibly a chromatic inner-voice figure or scan artifact. Uncertain."
+      },
+      {
+        "section": "B",
+        "bar": 3,
+        "context": "general",
+        "chords": ["Am7?"],
+        "note": "Am7 in Eb major context is unusual. Could be Aø (half-diminished, ii of Gm in a ii–V–i to Gm), or scan misread of AbM7. Flagged uncertain."
+      },
+      {
+        "section": "C",
+        "bar": 5,
+        "context": "general",
+        "chords": ["Am7?", "D7"],
+        "note": "Am7/D7 in bar 5 of C section: Am7 again uncertain (same issue as B bar 3). If Aø/D7, this would be a ii–V–i in Gm, nicely preparing bar 6 Gm/Cm7."
+      },
+      {
+        "section": "A",
+        "bar": 13,
+        "context": "general",
+        "chords": ["Eb7M", "Ab6", "Gm7?"],
+        "note": "VARIANT Bar 13 (= A' bar 5): EbM7 with Ab6/Gm7 as alternate voicing."
+      },
+      {
+        "section": "A1",
+        "bar": 29,
+        "context": "general",
+        "chords": ["Cø", "F7", "Ab6", "EbM7"],
+        "note": "VARIANT Bar 29 (asterisk row): Cø | F7(diag)Ab6 | EbM7 — an alternate ii–V–I ending in Eb for bars marked *."
+      }
+    ],
+    "fingerprints": [
+      {
+        "id": "rockin-chair-ii-v-i-eb",
+        "label": "ii–V–I cadence closing A section",
+        "location": { "section": "A", "bars": [7, 8] },
+        "chords": ["F7", "Fm7", "Bb7"],
+        "description": "Bars 7–8: F7 → Fm7/Bb7 = secondary ii–V (Fm7–Bb7 = ii–V in Eb) closing the A section."
+      },
+      {
+        "id": "rockin-chair-backdoor-db9",
+        "label": "Backdoor dominant Db9",
+        "location": { "section": "A", "bars": [4] },
+        "chords": ["Db9"],
+        "description": "Db9 (bVII9 in Eb) = backdoor dominant, resolving back to Eb in bar 5. A signature Carmichael harmonic touch."
+      },
+      {
+        "id": "rockin-chair-bvii7-approach",
+        "label": "bVI7 departure in C section",
+        "location": { "section": "C", "bars": [1, 2] },
+        "chords": ["Ab7", "Ab7"],
+        "description": "Section C opens on Ab7 (bIV7 in Eb, or IV7) — a bluesy departure before returning to Eb tonic. Creates strong contrast with the A sections."
+      },
+      {
+        "id": "rockin-chair-variant-half-dim-ii-v",
+        "label": "Half-diminished ii–V in VARIANT ending",
+        "location": { "section": "A1", "bars": [29] },
+        "chords": ["Cø", "F7", "Ab6", "EbM7"],
+        "description": "VARIANT bar 29 introduces Cø–F7 (minor ii–V in Bb minor recontextualized) before resolving to EbM7 — a more sophisticated alternate ending."
+      }
+    ],
+    "recordings": [
+      { "artist": "L.Armstrong", "year": 1958 },
+      { "artist": "C.Basis", "year": 1949 },
+      { "artist": "J.Bailey", "year": 1951 },
+      { "artist": "T.Wilson", "year": 1955 },
+      { "artist": "H.Carmichael", "year": 1951 },
+      { "artist": "S.Bechet", "year": 1956 },
+      { "artist": "F.Teagarden", "year": 1952 },
+      { "artist": "G.Maller", "year": 1944 },
+      { "artist": "M.Moore", "year": 1959 },
+      { "artist": "A.Shaw", "year": 1961 }
+    ]
+  },
+  {
+    "title": "Rockin' in Rhythm",
+    "title_uncertain": false,
+    "composer": "Duke Ellington – Harry Carney – Irving Mills",
+    "year": "1930",
+    "style": "ELLINGTONIA",
+    "tempo": "MEDIUM",
+    "form": "26 A B C",
+    "time_signature": "4/4",
+    "page": 342,
+    "source": null,
+    "sections": {
+      "intro": [
+        { "bar": 1, "beats": { "1": "B7", "3": "E7" } },
+        { "bar": 2, "beats": { "1": "A7", "3": "D7" } },
+        { "bar": 3, "beats": { "1": "G7", "3": "C" } },
+        { "bar": 4, "beats": { "1": "C" } }
+      ],
+      "A": [
+        { "bar": 1, "beats": { "1": "C", "3": "C" } },
+        { "bar": 2, "beats": { "1": "F", "3": "F#°" } },
+        { "bar": 3, "beats": { "1": "C", "3": "Am7" } },
+        { "bar": 4, "beats": { "1": "Dm7", "3": "G7" } },
+        { "bar": 5, "beats": { "1": "C", "3": "C" } },
+        { "bar": 6, "beats": { "1": "F", "3": "F#°" } },
+        { "bar": 7, "beats": { "1": "C", "3": "Am7" } },
+        { "bar": 8, "beats": { "1": "Dm7", "3": "G7" } }
+      ],
+      "A1": [
+        { "bar": 1, "beats": { "1": "C", "3": "C" } },
+        { "bar": 2, "beats": { "1": "F", "3": "F#°" } },
+        { "bar": 3, "beats": { "1": "C", "3": "Am7" } },
+        { "bar": 4, "beats": { "1": "Dm7", "3": "G7" } },
+        { "bar": 5, "beats": { "1": "C", "3": "C" } },
+        { "bar": 6, "beats": { "1": "F", "3": "F#°" } },
+        { "bar": 7, "beats": { "1": "C", "3": "Am7" } },
+        { "bar": 8, "beats": { "1": "Dm7", "3": "G7" } }
+      ],
+      "B": [
+        { "bar": 1, "beats": { "1": "C", "3": "C" } },
+        { "bar": 2, "beats": { "1": "F", "3": "F#°" } },
+        { "bar": 3, "beats": { "1": "C", "3": "Am7" } },
+        { "bar": 4, "beats": { "1": "Dm7", "3": "G7" } }
+      ],
+      "C": [
+        { "bar": 1, "beats": { "1": "C", "3": "C" } },
+        { "bar": 2, "beats": { "1": "Dm7", "3": "G7" } },
+        { "bar": 3, "beats": { "1": "Dm7", "3": "G7" } },
+        { "bar": 4, "beats": { "1": "C", "3": "Am7" } },
+        { "bar": 5, "beats": { "1": "C", "3": "C" } },
+        { "bar": 6, "beats": { "1": "C" } }
+      ],
+      "interlude": [
+        { "bar": 1, "beats": { "1": "Am", "3": "E7" } },
+        { "bar": 2, "beats": { "1": "Am", "3": "E7" } },
+        { "bar": 3, "beats": { "1": "Am", "3": "E7" } },
+        { "bar": 4, "beats": { "1": "Am", "3": "E7" } }
+      ],
+      "clarinet_A": [
+        { "bar": 1, "beats": { "1": "Am", "3": "E7" } },
+        { "bar": 2, "beats": { "1": "Am", "3": "E7" } },
+        { "bar": 3, "beats": { "1": "Am", "3": "E7" } },
+        { "bar": 4, "beats": { "1": "Am", "3": "E7" } },
+        { "bar": 5, "beats": { "1": "Am", "3": "E7" } },
+        { "bar": 6, "beats": { "1": "Am", "3": "E7" } },
+        { "bar": 7, "beats": { "1": "Am", "3": "E7" } },
+        { "bar": 8, "beats": { "1": "Am" } }
+      ],
+      "clarinet_A1": [
+        { "bar": 1, "beats": { "1": "Am", "3": "E7" } },
+        { "bar": 2, "beats": { "1": "Am", "3": "E7" } },
+        { "bar": 3, "beats": { "1": "Am", "3": "E7" } },
+        { "bar": 4, "beats": { "1": "Am", "3": "E7" } },
+        { "bar": 5, "beats": { "1": "Am", "3": "E7" } },
+        { "bar": 6, "beats": { "1": "Am", "3": "E7" } },
+        { "bar": 7, "beats": { "1": "Am", "3": "E7" } },
+        { "bar": 8, "beats": { "1": "Am" } }
+      ]
+    },
+    "notation_notes": {
+      "harmonic_note": "Composer annotation: 'The chord changes of ① and ② are written particularly for the bass line. The real harmony is not very different from a C Maj. chord all the time.'",
+      "form_note": "Form 26 A B C: A section = 16 bars (played as A A = two 8-bar repeats), B = 4 bars, C = 6 bars. Section ② = repeat of ①. Section ③ = clarinet solo section (16 bars, Am/E7 vamp).",
+      "performance_note": "BACK TO INTRODUCTION, THEN BACK TO ① ONCE WITH Rall... at the end. SOLOS ON ②."
+    },
+    "fingerprints": [
+      {
+        "id": "rockin-in-rhythm-chromatic-passing-fsharp-dim",
+        "label": "Chromatic passing F#° between F and C",
+        "location": { "section": "A", "bars": [2] },
+        "chords": ["F", "F#°"],
+        "description": "F(diag)F#°: F major moving to F#° as a chromatic passing diminished chord back to C — a signature Ellington device creating chromatic inner-voice motion (F→F#→G implied)."
+      },
+      {
+        "id": "rockin-in-rhythm-descending-intro",
+        "label": "Descending chromatic dominant chain introduction",
+        "location": { "section": "intro", "bars": [1, 2, 3] },
+        "chords": ["B7", "E7", "A7", "D7", "G7", "C"],
+        "description": "Introduction uses a back-cycling chain of dominants descending by fifths (B7–E7–A7–D7–G7–C), each bar splitting two dominants — a telescoped cycle-of-fifths that lands dramatically on the C tonic."
+      },
+      {
+        "id": "rockin-in-rhythm-am-e7-vamp",
+        "label": "Am/E7 pedal vamp (Interlude and Clarinet sections)",
+        "location": { "section": "interlude", "bars": [1, 2, 3, 4] },
+        "chords": ["Am", "E7"],
+        "description": "The interlude and clarinet sections sustain an Am/E7 oscillation — a modal pedal on the vi chord area of C major — providing stark contrast to the predominantly C major vamp of the main chorus."
+      }
+    ],
+    "recordings": [
+      { "artist": "D.Ellington", "year": 1957 },
+      { "artist": "D.Ellington", "year": 1930 },
+      { "artist": "C.Terry", "year": 1964 },
+      { "artist": "D.Ellington", "year": 1960 },
+      { "artist": "C.Barber", "year": 1934 },
+      { "artist": "J.Rowles", "year": 1940 },
+      { "artist": "E.Fitzgerald", "year": 1943 },
+      { "artist": "F.Braslawsky", "year": 1958 },
+      { "artist": "H.James", "year": 1946 },
+      { "artist": "D.Ellington", "year": 1931 },
+      { "artist": "B.Nichols", "year": 1937 },
+      { "artist": "D.Ellington", "year": 1939 },
+      { "artist": "Madame Tussaud", "year": 1940 },
+      { "artist": "L.Hampton", "year": 1959 },
+      { "artist": "J.Adarnieri", "year": 1960 }
+    ]
+  }
+]
