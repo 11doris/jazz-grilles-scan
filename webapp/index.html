@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jazz Lead Sheet Reviewer</title>
+<style>
+/* ── Reset & Base ─────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f5f5f0;
+  --surface: #ffffff;
+  --border: #ccc;
+  --border-dark: #888;
+  --text: #1a1a1a;
+  --text-muted: #666;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --saved: #16a34a;
+  --saved-bg: #dcfce7;
+  --skipped: #d97706;
+  --skipped-bg: #fef3c7;
+  --unreviewed: #9ca3af;
+  --unreviewed-bg: #f3f4f6;
+  --danger: #dc2626;
+  --danger-bg: #fee2e2;
+  --multi-beat-bg: #eff6ff;
+  --chord-font: 'Courier New', 'Consolas', monospace;
+  --bar-w: 92px;
+  --bar-h: 64px;
+  --label-w: 88px;
+}
+html, body { height: 100%; font-family: system-ui, -apple-system, sans-serif; font-size: 14px; background: var(--bg); color: var(--text); }
+
+/* ── Layout ───────────────────────────────────────────────────────────────── */
+#app { display: flex; flex-direction: column; height: 100vh; }
+#toolbar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #1e293b; color: #e2e8f0; flex-shrink: 0; flex-wrap: wrap; }
+#toolbar h1 { font-size: 15px; font-weight: 700; letter-spacing: .04em; margin-right: 8px; white-space: nowrap; }
+#toolbar .spacer { flex: 1; }
+.tb-btn { background: #334155; border: 1px solid #475569; color: #e2e8f0; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 13px; white-space: nowrap; }
+.tb-btn:hover { background: #475569; }
+.tb-btn.danger { background: #7f1d1d; border-color: #991b1b; }
+.tb-btn.danger:hover { background: #991b1b; }
+#download-btn { background: #065f46; border-color: #047857; }
+#download-btn:hover { background: #047857; }
+
+#main { display: flex; flex: 1; overflow: hidden; }
+
+/* ── Sidebar ──────────────────────────────────────────────────────────────── */
+#sidebar { width: 220px; flex-shrink: 0; background: #f8f8f6; border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+#sidebar-header { padding: 8px 10px; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+#tune-list { flex: 1; overflow-y: auto; }
+.tune-item { display: flex; align-items: center; gap: 7px; padding: 6px 10px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 13px; }
+.tune-item:hover { background: #ececea; }
+.tune-item.active { background: #dbeafe; font-weight: 600; }
+.tune-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.tune-dot.saved { background: var(--saved); }
+.tune-dot.skipped { background: var(--skipped); }
+.tune-dot.unreviewed { background: var(--unreviewed); }
+.tune-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.tune-num { font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
+
+/* ── Content area ─────────────────────────────────────────────────────────── */
+#content { flex: 1; overflow-y: auto; padding: 16px 20px 80px; }
+
+/* ── Startup screen ───────────────────────────────────────────────────────── */
+#startup-screen { display: flex; align-items: center; justify-content: center; height: 100%; }
+.startup-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 40px 48px; max-width: 460px; width: 100%; text-align: center; }
+.startup-card h2 { font-size: 22px; margin-bottom: 8px; }
+.startup-card p { color: var(--text-muted); margin-bottom: 24px; line-height: 1.5; }
+.startup-card .btn-group { display: flex; gap: 12px; flex-direction: column; }
+.btn-primary { background: var(--accent); color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: 600; }
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-secondary { background: #fff; color: var(--text); border: 1px solid var(--border-dark); padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 15px; }
+.btn-secondary:hover { background: #f5f5f0; }
+#file-input { display: none; }
+
+/* ── Progress bar ─────────────────────────────────────────────────────────── */
+#progress-bar-area { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+#progress-label { font-size: 14px; font-weight: 600; }
+#progress-stats { font-size: 13px; color: var(--text-muted); }
+.prog-track { flex: 1; min-width: 120px; height: 6px; background: #e5e7eb; border-radius: 3px; overflow: hidden; }
+.prog-fill { height: 100%; background: var(--accent); transition: width .3s; }
+
+/* ── Tune header ──────────────────────────────────────────────────────────── */
+#tune-header { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; margin-bottom: 16px; }
+.header-row1 { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; flex-wrap: wrap; }
+.tune-title { font-size: 22px; font-weight: 800; letter-spacing: .02em; text-transform: uppercase; outline: none; border-bottom: 1px dashed transparent; min-width: 40px; }
+.tune-title:focus { border-bottom-color: var(--accent); }
+.uncertain-pill { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; cursor: pointer; user-select: none; border: 1px solid; flex-shrink: 0; }
+.uncertain-pill.on { background: #fef9c3; color: #854d0e; border-color: #ca8a04; }
+.uncertain-pill.off { background: #f3f4f6; color: #9ca3af; border-color: #d1d5db; }
+.header-row2, .header-row3 { font-size: 13px; color: var(--text-muted); display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 3px; }
+.header-row2 span, .header-row3 span { color: var(--text); }
+.meta-label { color: var(--text-muted); }
+.meta-field { outline: none; border-bottom: 1px dashed transparent; min-width: 20px; display: inline-block; }
+.meta-field:focus { border-bottom-color: var(--accent); }
+.sep { color: #ccc; }
+
+/* ── Section ──────────────────────────────────────────────────────────────── */
+.section-block { margin-bottom: 10px; }
+.section-row { display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+.section-label-col { width: var(--label-w); flex-shrink: 0; display: flex; align-items: flex-start; padding-top: 28px; gap: 4px; }
+.section-label { font-weight: 700; font-size: 14px; outline: none; border-bottom: 1px dashed transparent; min-width: 24px; text-align: center; }
+.section-label:focus { border-bottom-color: var(--accent); }
+.del-section-btn { font-size: 11px; color: var(--text-muted); cursor: pointer; background: none; border: none; padding: 1px 3px; }
+.del-section-btn:hover { color: var(--danger); }
+.bars-col { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.bar-row { display: flex; flex-wrap: nowrap; gap: 3px; align-items: flex-start; }
+/* ── Bar box ──────────────────────────────────────────────────────────────── */
+.bar-box { width: var(--bar-w); flex-shrink: 0; border: 1.5px solid var(--border-dark); border-radius: 3px; background: var(--surface); display: flex; flex-direction: column; overflow: hidden; }
+.bar-box.multi { background: var(--multi-beat-bg); }
+.bar-num { font-size: 9px; color: var(--text-muted); text-align: center; padding: 1px 0; border-bottom: 1px solid #e5e7eb; line-height: 1.2; background: #f9f9f8; }
+.beats-row { display: flex; flex: 1; }
+.beat-cell { flex: 1; border-right: 1px solid #e0e0e0; display: flex; flex-direction: column; align-items: center; min-height: var(--bar-h); position: relative; }
+.beat-cell:last-child { border-right: none; }
+.beat-label { font-size: 8px; color: #bbb; line-height: 1; padding-top: 2px; }
+.chord-wrap { flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; padding: 0 1px; }
+.chord-sym { font-family: var(--chord-font); font-size: 12px; font-weight: 600; outline: none; min-width: 18px; text-align: center; cursor: text; padding: 1px 2px; border-radius: 2px; line-height: 1.3; display: block; white-space: nowrap; }
+.chord-sym:focus { background: #fffbeb; outline: 1px solid var(--accent); }
+.chord-del { position: absolute; top: 1px; right: 1px; font-size: 9px; line-height: 1; cursor: pointer; color: #ddd; background: none; border: none; padding: 0; display: none; }
+.chord-del:hover { color: var(--danger); }
+.beat-cell:hover .chord-del { display: block; }
+.add-chord-btn { font-size: 10px; color: #bbb; cursor: pointer; background: none; border: none; padding: 2px; line-height: 1; }
+.add-chord-btn:hover { color: var(--accent); }
+/* End-of-row controls */
+.row-controls { display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 4px; gap: 3px; }
+.add-bar-btn { font-size: 11px; white-space: nowrap; background: #f0f9ff; border: 1px solid #93c5fd; color: #1d4ed8; padding: 2px 6px; border-radius: 3px; cursor: pointer; }
+.add-bar-btn:hover { background: #dbeafe; }
+/* chord grid footer */
+#grid-footer { margin-top: 8px; }
+.add-section-btn { font-size: 12px; background: #f0fdf4; border: 1px solid #86efac; color: #166534; padding: 4px 12px; border-radius: 4px; cursor: pointer; }
+.add-section-btn:hover { background: #dcfce7; }
+
+/* ── Secondary blocks ─────────────────────────────────────────────────────── */
+.collapse-section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-top: 12px; overflow: hidden; }
+.collapse-header { display: flex; align-items: center; gap: 8px; padding: 9px 14px; cursor: pointer; background: #fafaf8; border-bottom: 1px solid #eee; user-select: none; }
+.collapse-header h3 { font-size: 13px; font-weight: 600; flex: 1; }
+.collapse-arrow { font-size: 11px; color: var(--text-muted); transition: transform .2s; }
+.collapse-arrow.open { transform: rotate(90deg); }
+.collapse-body { padding: 12px 14px; display: none; }
+.collapse-body.open { display: block; }
+
+/* cards */
+.card { background: #fafaf8; border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; margin-bottom: 8px; position: relative; }
+.card-del { position: absolute; top: 6px; right: 8px; background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 14px; line-height: 1; }
+.card-del:hover { color: var(--danger); }
+.field-row { display: flex; align-items: baseline; gap: 6px; margin-bottom: 5px; flex-wrap: wrap; }
+.field-label { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; flex-shrink: 0; }
+.field-input { border: none; border-bottom: 1px solid #ddd; background: transparent; font-size: 13px; outline: none; flex: 1; min-width: 60px; font-family: inherit; }
+.field-input:focus { border-bottom-color: var(--accent); }
+.field-input.mono { font-family: var(--chord-font); }
+.add-row-btn { font-size: 12px; background: #f0f9ff; border: 1px solid #93c5fd; color: #1d4ed8; padding: 3px 10px; border-radius: 4px; cursor: pointer; margin-top: 4px; }
+.add-row-btn:hover { background: #dbeafe; }
+
+/* kv pairs */
+.kv-row { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+.kv-key { font-family: var(--chord-font); font-size: 12px; border: 1px solid #ddd; border-radius: 3px; padding: 2px 6px; background: transparent; outline: none; min-width: 80px; }
+.kv-key:focus { border-color: var(--accent); }
+.kv-val { flex: 1; border: 1px solid #ddd; border-radius: 3px; padding: 2px 6px; background: transparent; outline: none; font-size: 13px; }
+.kv-val:focus { border-color: var(--accent); }
+.kv-del { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 14px; padding: 0 3px; }
+.kv-del:hover { color: var(--danger); }
+
+/* recordings table */
+.rec-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.rec-table th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted); padding: 0 6px 4px; }
+.rec-table td { padding: 2px 0; }
+.rec-input { border: none; border-bottom: 1px solid #ddd; background: transparent; font-size: 13px; outline: none; width: 100%; }
+.rec-input:focus { border-bottom-color: var(--accent); }
+.rec-del-btn { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 13px; padding: 0 4px; }
+.rec-del-btn:hover { color: var(--danger); }
+
+/* ── Action buttons ───────────────────────────────────────────────────────── */
+#action-bar { position: fixed; bottom: 0; left: 220px; right: 0; background: rgba(255,255,255,.95); backdrop-filter: blur(4px); border-top: 1px solid var(--border); padding: 10px 20px; display: flex; align-items: center; gap: 10px; z-index: 100; flex-wrap: wrap; }
+.btn-save { background: var(--saved); color: #fff; border: none; padding: 10px 22px; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: 700; }
+.btn-save:hover { background: #15803d; }
+.btn-skip { background: #fff; border: 1px solid var(--skipped); color: var(--skipped); padding: 10px 18px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; }
+.btn-skip:hover { background: var(--skipped-bg); }
+.status-badge { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
+.status-badge.saved { background: var(--saved-bg); color: var(--saved); }
+.status-badge.skipped { background: var(--skipped-bg); color: var(--skipped); }
+.status-badge.unreviewed { background: var(--unreviewed-bg); color: #6b7280; }
+
+/* ── Utility ──────────────────────────────────────────────────────────────── */
+[contenteditable]:empty:before { content: attr(data-placeholder); color: #bbb; font-style: italic; }
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- Toolbar -->
+  <div id="toolbar" class="hidden">
+    <h1>🎷 Jazz Lead Sheet Reviewer</h1>
+    <span id="progress-label-tb"></span>
+    <div class="spacer"></div>
+    <button class="tb-btn" id="download-btn" onclick="downloadOutput()">⬇ Download JSON</button>
+    <button class="tb-btn danger" onclick="confirmReset()">↺ Reset Session</button>
+  </div>
+
+  <div id="main">
+    <!-- Sidebar -->
+    <div id="sidebar" class="hidden">
+      <div id="sidebar-header">Tune List</div>
+      <div id="tune-list"></div>
+    </div>
+
+    <!-- Content -->
+    <div id="content">
+      <!-- Startup screen -->
+      <div id="startup-screen">
+        <div class="startup-card">
+          <h2>🎷 Jazz Lead Sheet Reviewer</h2>
+          <p>Review and correct digitized jazz lead sheets stored as a JSON array.</p>
+          <div class="btn-group" id="startup-buttons">
+            <!-- populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Tune editor (hidden until loaded) -->
+      <div id="tune-editor" class="hidden">
+        <!-- Progress -->
+        <div id="progress-bar-area">
+          <span id="progress-label"></span>
+          <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+          <span id="progress-stats"></span>
+        </div>
+
+        <!-- Tune header metadata -->
+        <div id="tune-header">
+          <div class="header-row1">
+            <span class="tune-title" contenteditable="true" id="meta-title" data-placeholder="Title"></span>
+            <span class="uncertain-pill off" id="uncertain-pill" onclick="toggleUncertain()">UNCERTAIN</span>
+          </div>
+          <div class="header-row2">
+            <span class="meta-field" contenteditable="true" id="meta-composer" data-placeholder="Composer"></span>
+            <span class="sep">·</span>
+            <span class="meta-field" contenteditable="true" id="meta-year" data-placeholder="Year"></span>
+            <span class="sep">·</span>
+            <span class="meta-field" contenteditable="true" id="meta-style" data-placeholder="Style"></span>
+            <span class="sep">·</span>
+            <span class="meta-field" contenteditable="true" id="meta-tempo" data-placeholder="Tempo"></span>
+          </div>
+          <div class="header-row3">
+            <span class="meta-label">Form:</span>
+            <span class="meta-field" contenteditable="true" id="meta-form" data-placeholder="Form"></span>
+            <span class="sep">·</span>
+            <span class="meta-label">Time:</span>
+            <span class="meta-field" contenteditable="true" id="meta-time_signature" data-placeholder="4/4"></span>
+            <span class="sep">·</span>
+            <span class="meta-label">Page:</span>
+            <span class="meta-field" contenteditable="true" id="meta-page" data-placeholder="Page"></span>
+            <span class="sep">·</span>
+            <span class="meta-label">Source:</span>
+            <span class="meta-field" contenteditable="true" id="meta-source" data-placeholder="—"></span>
+          </div>
+        </div>
+
+        <!-- Chord Grid -->
+        <div id="chord-grid"></div>
+        <div id="grid-footer">
+          <button class="add-section-btn" onclick="addSection()">+ Add Section</button>
+        </div>
+
+        <!-- Secondary blocks -->
+        <div id="secondary-blocks"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action bar -->
+  <div id="action-bar" class="hidden">
+    <button class="btn-save" id="save-btn" onclick="saveAndNext()">Save and Next Tune →</button>
+    <button class="btn-skip" onclick="skipTune()">Skip</button>
+    <span class="status-badge unreviewed" id="status-badge">Unreviewed</span>
+  </div>
+</div>
+
+<input type="file" id="file-input" accept=".json,.txt" onchange="loadFile(event)">
+
+<script>
+'use strict';
+
+// ─── State ─────────────────────────────────────────────────────────────────
+const LS_KEY = 'jazzReviewerSession';
+let state = {
+  tunes: [],        // raw tune objects (current edited data)
+  statuses: [],     // 'unreviewed' | 'saved' | 'skipped'
+  currentIndex: 0,
+  savedOutput: [],  // array of tune objects that have been saved
+};
+
+// ─── Startup ───────────────────────────────────────────────────────────────
+function init() {
+  const stored = localStorage.getItem(LS_KEY);
+  const btns = document.getElementById('startup-buttons');
+  if (stored) {
+    const saved = JSON.parse(stored);
+    const title = saved.tunes && saved.tunes[0] ? saved.tunes[0].title : 'session';
+    btns.innerHTML = `
+      <button class="btn-primary" onclick="resumeSession()">▶ Resume Session</button>
+      <p style="font-size:12px;color:#6b7280;margin:-8px 0;">Last session: ${saved.tunes.length} tunes · ${saved.statuses.filter(s=>s==='saved').length} saved</p>
+      <button class="btn-secondary" onclick="startFresh()">Start Fresh (load new file)</button>
+    `;
+  } else {
+    btns.innerHTML = `<button class="btn-primary" onclick="startFresh()">Load Input JSON…</button>`;
+  }
+}
+
+function resumeSession() {
+  const stored = localStorage.getItem(LS_KEY);
+  if (!stored) { startFresh(); return; }
+  state = JSON.parse(stored);
+  showEditor();
+}
+
+function startFresh() {
+  document.getElementById('file-input').click();
+}
+
+function loadFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const tunes = JSON.parse(e.target.result);
+      if (!Array.isArray(tunes)) throw new Error('Not an array');
+      state = {
+        tunes: tunes.map(t => deepClone(t)),
+        statuses: tunes.map(() => 'unreviewed'),
+        currentIndex: 0,
+        savedOutput: [],
+      };
+      persistSession();
+      showEditor();
+    } catch(err) {
+      alert('Error parsing JSON: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function showEditor() {
+  document.getElementById('startup-screen').classList.add('hidden');
+  document.getElementById('toolbar').classList.remove('hidden');
+  document.getElementById('sidebar').classList.remove('hidden');
+  document.getElementById('tune-editor').classList.remove('hidden');
+  document.getElementById('action-bar').classList.remove('hidden');
+  renderSidebar();
+  renderTune(state.currentIndex);
+}
+
+// ─── Persistence ───────────────────────────────────────────────────────────
+function saveState() {
+  localStorage.setItem(LS_KEY, JSON.stringify(state));
+}
+
+// Collect current DOM edits into state, then persist to localStorage
+function persistSession() {
+  if (document.getElementById('tune-editor') && !document.getElementById('tune-editor').classList.contains('hidden')) {
+    collectEdits();
+  }
+  saveState();
+}
+
+function clearSession() {
+  localStorage.removeItem(LS_KEY);
+}
+
+function confirmReset() {
+  if (confirm('Reset the session? All progress will be lost.')) {
+    clearSession();
+    location.reload();
+  }
+}
+
+// ─── Deep clone ────────────────────────────────────────────────────────────
+function deepClone(obj) { return JSON.parse(JSON.stringify(obj)); }
+
+// ─── Collect edits from DOM → state ───────────────────────────────────────
+function collectEdits() {
+  const t = state.tunes[state.currentIndex];
+  if (!t) return;
+
+  // Scalar metadata
+  const scalarFields = ['title','composer','year','style','tempo','form','time_signature','page','source'];
+  for (const f of scalarFields) {
+    const el = document.getElementById('meta-' + f);
+    if (el) {
+      // Use textContent (not innerText) to avoid CSS text-transform affecting values
+      let val = el.textContent.trim();
+      if (f === 'page') { const n = parseInt(val); t[f] = isNaN(n) ? val : n; }
+      else t[f] = val || (f === 'source' ? null : val);
+    }
+  }
+
+  // Chord grid → sections
+  t.sections = collectSections();
+
+  // Secondary blocks
+  collectSecondary(t);
+}
+
+function collectSections() {
+  const sections = {};
+  document.querySelectorAll('.section-block').forEach(block => {
+    const sKey = block.dataset.section;
+    const bars = [];
+    block.querySelectorAll('.bar-box').forEach(box => {
+      const barNum = parseInt(box.dataset.bar);
+      const beats = {};
+      box.querySelectorAll('.beat-cell').forEach(cell => {
+        const beat = cell.dataset.beat;
+        const chord = cell.querySelector('.chord-sym');
+        if (chord) {
+          const val = chord.textContent.trim();
+          if (val) beats[beat] = val;
+        }
+      });
+      bars.push({ bar: barNum, beats });
+    });
+    sections[sKey] = bars;
+  });
+  return sections;
+}
+
+function collectSecondary(t) {
+  // Fingerprints
+  const fps = [];
+  document.querySelectorAll('.fp-card').forEach(card => {
+    fps.push({
+      id: card.querySelector('[data-fp="id"]').value.trim(),
+      label: card.querySelector('[data-fp="label"]').value.trim(),
+      location: {
+        section: card.querySelector('[data-fp="loc-section"]').value.trim(),
+        bars: card.querySelector('[data-fp="loc-bars"]').value.trim().split(',').map(s=>parseInt(s.trim())).filter(n=>!isNaN(n))
+      },
+      chords: card.querySelector('[data-fp="chords"]').value.trim().split(',').map(s=>s.trim()).filter(Boolean),
+      description: card.querySelector('[data-fp="description"]').value.trim(),
+    });
+  });
+  t.fingerprints = fps;
+
+  // Notation notes
+  const nn = {};
+  document.querySelectorAll('.kv-row[data-block="nn"]').forEach(row => {
+    const k = row.querySelector('.kv-key').value.trim();
+    const v = row.querySelector('.kv-val').value.trim();
+    if (k) nn[k] = v;
+  });
+  if (Object.keys(nn).length > 0) t.notation_notes = nn;
+  else delete t.notation_notes;
+
+  // Ambiguities
+  const ambs = [];
+  document.querySelectorAll('.amb-card').forEach(card => {
+    ambs.push({
+      section: card.querySelector('[data-amb="section"]').value.trim(),
+      bar: parseInt(card.querySelector('[data-amb="bar"]').value) || 0,
+      context: card.querySelector('[data-amb="context"]').value.trim(),
+      chords: card.querySelector('[data-amb="chords"]').value.trim().split(',').map(s=>s.trim()).filter(Boolean),
+      note: card.querySelector('[data-amb="note"]').value.trim(),
+    });
+  });
+  if (ambs.length > 0) t.ambiguities = ambs; else delete t.ambiguities;
+
+  // Variants
+  const vars = [];
+  document.querySelectorAll('.var-card').forEach(card => {
+    vars.push({
+      section: card.querySelector('[data-var="section"]').value.trim(),
+      bar: parseInt(card.querySelector('[data-var="bar"]').value) || 0,
+      context: card.querySelector('[data-var="context"]').value.trim(),
+      chords: card.querySelector('[data-var="chords"]').value.trim().split(',').map(s=>s.trim()).filter(Boolean),
+      note: card.querySelector('[data-var="note"]').value.trim(),
+    });
+  });
+  if (vars.length > 0) t.variants = vars; else delete t.variants;
+
+  // Recordings
+  const recs = [];
+  document.querySelectorAll('.rec-row').forEach(row => {
+    const artist = row.querySelector('[data-rec="artist"]').value.trim();
+    const yearStr = row.querySelector('[data-rec="year"]').value.trim();
+    const year = parseInt(yearStr);
+    if (artist) recs.push({ artist, year: isNaN(year) ? yearStr : year });
+  });
+  t.recordings = recs;
+}
+
+// ─── Sidebar ────────────────────────────────────────────────────────────────
+function renderSidebar() {
+  const list = document.getElementById('tune-list');
+  list.innerHTML = '';
+  state.tunes.forEach((t, i) => {
+    const status = state.statuses[i];
+    const div = document.createElement('div');
+    div.className = 'tune-item' + (i === state.currentIndex ? ' active' : '');
+    div.innerHTML = `<span class="tune-dot ${status}"></span><span class="tune-name">${escHtml(t.title || '(untitled)')}</span><span class="tune-num">${i+1}</span>`;
+    div.onclick = () => jumpTo(i);
+    list.appendChild(div);
+  });
+}
+
+function jumpTo(idx) {
+  collectEdits();
+  state.currentIndex = idx;
+  saveState();
+  renderTune(idx);
+}
+
+// ─── Render tune ────────────────────────────────────────────────────────────
+function renderTune(idx) {
+  const t = state.tunes[idx];
+  if (!t) return;
+
+  // Toolbar progress
+  document.getElementById('progress-label-tb').textContent = `${idx+1} / ${state.tunes.length}`;
+
+  // Progress bar
+  const total = state.tunes.length;
+  const saved = state.statuses.filter(s=>s==='saved').length;
+  const skipped = state.statuses.filter(s=>s==='skipped').length;
+  const unreviewed = total - saved - skipped;
+  document.getElementById('progress-label').textContent = `Tune ${idx+1} of ${total}`;
+  document.getElementById('progress-stats').textContent = `${saved} saved · ${skipped} skipped · ${unreviewed} unreviewed`;
+  document.getElementById('prog-fill').style.width = `${Math.round((saved+skipped)/total*100)}%`;
+
+  // Status badge
+  const badge = document.getElementById('status-badge');
+  const st = state.statuses[idx];
+  badge.className = 'status-badge ' + st;
+  badge.textContent = st.charAt(0).toUpperCase() + st.slice(1);
+
+  // Save button label
+  const saveBtn = document.getElementById('save-btn');
+  saveBtn.textContent = (idx === state.tunes.length - 1) ? 'Save and Finish ✓' : 'Save and Next Tune →';
+
+  // Metadata header
+  setEditable('meta-title', t.title || '');
+  setEditable('meta-composer', t.composer || '');
+  setEditable('meta-year', t.year || '');
+  setEditable('meta-style', t.style || '');
+  setEditable('meta-tempo', t.tempo || '');
+  setEditable('meta-form', t.form || '');
+  setEditable('meta-time_signature', t.time_signature || '');
+  setEditable('meta-page', t.page != null ? String(t.page) : '');
+  setEditable('meta-source', t.source || '');
+  const pill = document.getElementById('uncertain-pill');
+  pill.className = 'uncertain-pill ' + (t.title_uncertain ? 'on' : 'off');
+
+  // Auto-persist on edits
+  ['meta-title','meta-composer','meta-year','meta-style','meta-tempo','meta-form','meta-time_signature','meta-page','meta-source'].forEach(id => {
+    const el = document.getElementById(id);
+    el.oninput = () => persistSession();
+  });
+
+  // Chord grid
+  renderChordGrid(t);
+
+  // Secondary blocks
+  renderSecondaryBlocks(t);
+
+  // Scroll top
+  document.getElementById('content').scrollTop = 0;
+
+  // Update sidebar
+  renderSidebar();
+}
+
+function setEditable(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+function toggleUncertain() {
+  const t = state.tunes[state.currentIndex];
+  t.title_uncertain = !t.title_uncertain;
+  const pill = document.getElementById('uncertain-pill');
+  pill.className = 'uncertain-pill ' + (t.title_uncertain ? 'on' : 'off');
+  persistSession();
+}
+
+// ─── Chord Grid ─────────────────────────────────────────────────────────────
+function renderChordGrid(t) {
+  const grid = document.getElementById('chord-grid');
+  grid.innerHTML = '';
+  const sectionKeys = Object.keys(t.sections || {});
+  sectionKeys.forEach(sKey => {
+    grid.appendChild(buildSectionBlock(sKey, t.sections[sKey]));
+  });
+}
+
+function buildSectionBlock(sKey, bars) {
+  const block = document.createElement('div');
+  block.className = 'section-block';
+  block.dataset.section = sKey;
+
+  const sectionRow = document.createElement('div');
+  sectionRow.className = 'section-row';
+
+  // Label column
+  const labelCol = document.createElement('div');
+  labelCol.className = 'section-label-col';
+  const labelEl = document.createElement('span');
+  labelEl.className = 'section-label';
+  labelEl.contentEditable = 'true';
+  labelEl.dataset.placeholder = 'name';
+  labelEl.textContent = sKey;
+  labelEl.oninput = () => {
+    block.dataset.section = labelEl.textContent.trim();
+    persistSession();
+  };
+  const delBtn = document.createElement('button');
+  delBtn.className = 'del-section-btn';
+  delBtn.title = 'Delete section';
+  delBtn.innerHTML = '×';
+  delBtn.onclick = () => {
+    const currentKey = block.dataset.section;
+    if (confirm(`Delete section "${currentKey}"?`)) {
+      block.remove();
+      persistSession();
+    }
+  };
+  labelCol.appendChild(labelEl);
+  labelCol.appendChild(delBtn);
+
+  // Bars column (chunked into rows of 8)
+  const barsCol = document.createElement('div');
+  barsCol.className = 'bars-col';
+
+  const CHUNK = 8;
+  // Always run at least once (covers empty section case)
+  for (let start = 0; start === 0 || start < bars.length; start += CHUNK) {
+    const chunk = bars.slice(start, start + CHUNK);
+    const barRow = document.createElement('div');
+    barRow.className = 'bar-row';
+    chunk.forEach(barObj => {
+      barRow.appendChild(buildBarBox(barObj));
+    });
+    // Add-bar button only on last chunk
+    if (start + CHUNK >= bars.length) {
+      const rowControls = document.createElement('div');
+      rowControls.className = 'row-controls';
+      const addBarBtn = document.createElement('button');
+      addBarBtn.className = 'add-bar-btn';
+      addBarBtn.textContent = '+ Bar';
+      addBarBtn.onclick = () => {
+        collectEdits();
+        const t = state.tunes[state.currentIndex];
+        const sec = t.sections[block.dataset.section] || [];
+        const nextBar = sec.length > 0 ? sec[sec.length - 1].bar + 1 : 1;
+        if (!t.sections[block.dataset.section]) t.sections[block.dataset.section] = sec;
+        sec.push({ bar: nextBar, beats: {} });
+        renderChordGrid(t);
+        persistSession();
+      };
+      rowControls.appendChild(addBarBtn);
+      barRow.appendChild(rowControls);
+    }
+    barsCol.appendChild(barRow);
+  }
+
+  sectionRow.appendChild(labelCol);
+  sectionRow.appendChild(barsCol);
+  block.appendChild(sectionRow);
+  return block;
+}
+
+function buildBarBox(barObj) {
+  const beatCount = Object.keys(barObj.beats || {}).length;
+  const box = document.createElement('div');
+  box.className = 'bar-box' + (beatCount >= 2 ? ' multi' : '');
+  box.dataset.bar = barObj.bar;
+
+  const numEl = document.createElement('div');
+  numEl.className = 'bar-num';
+  numEl.textContent = barObj.bar;
+  box.appendChild(numEl);
+
+  const beatsRow = document.createElement('div');
+  beatsRow.className = 'beats-row';
+  for (let b = 1; b <= 4; b++) {
+    beatsRow.appendChild(buildBeatCell(String(b), barObj.beats[String(b)] || null));
+  }
+  box.appendChild(beatsRow);
+  return box;
+}
+
+function buildBeatCell(beat, chord) {
+  const cell = document.createElement('div');
+  cell.className = 'beat-cell';
+  cell.dataset.beat = beat;
+
+  const beatLabel = document.createElement('span');
+  beatLabel.className = 'beat-label';
+  beatLabel.textContent = beat;
+  cell.appendChild(beatLabel);
+
+  const chordWrap = document.createElement('div');
+  chordWrap.className = 'chord-wrap';
+
+  if (chord !== null) {
+    // Chord symbol (editable)
+    const sym = document.createElement('span');
+    sym.className = 'chord-sym';
+    sym.contentEditable = 'true';
+    sym.textContent = chord;
+    sym.setAttribute('spellcheck', 'false');
+    sym.oninput = debounce(() => persistSession(), 400);
+    sym.onblur = () => {
+      if (!sym.textContent.trim()) {
+        // Remove chord when cleared
+        const box = cell.closest('.bar-box');
+        cell.replaceWith(buildBeatCell(beat, null));
+        updateBoxMulti(box);
+        persistSession();
+      }
+    };
+    chordWrap.appendChild(sym);
+
+    // Delete button
+    const delBtn = document.createElement('button');
+    delBtn.className = 'chord-del';
+    delBtn.title = 'Remove chord';
+    delBtn.textContent = '×';
+    delBtn.onclick = () => {
+      const box = cell.closest('.bar-box');
+      const newCell = buildBeatCell(beat, null);
+      cell.replaceWith(newCell);
+      updateBoxMulti(box);
+      persistSession();
+    };
+    cell.appendChild(delBtn);
+  } else {
+    // Empty slot: show + to add chord
+    const addBtn = document.createElement('button');
+    addBtn.className = 'add-chord-btn';
+    addBtn.title = 'Add chord';
+    addBtn.textContent = '+';
+    addBtn.onclick = () => {
+      const newCell = buildBeatCell(beat, '');
+      cell.replaceWith(newCell);
+      const sym = newCell.querySelector('.chord-sym');
+      if (sym) sym.focus();
+      updateBoxMulti(newCell.closest('.bar-box'));
+      persistSession();
+    };
+    chordWrap.appendChild(addBtn);
+  }
+  cell.appendChild(chordWrap);
+  return cell;
+}
+
+function updateBoxMulti(box) {
+  if (!box) return;
+  const filled = box.querySelectorAll('.chord-sym').length;
+  box.classList.toggle('multi', filled >= 2);
+}
+
+function addSection() {
+  collectEdits();
+  const t = state.tunes[state.currentIndex];
+  const name = prompt('Section name (e.g. A, B, intro, chorus1):');
+  if (!name || !name.trim()) return;
+  const key = name.trim();
+  if (!t.sections) t.sections = {};
+  t.sections[key] = [];
+  renderChordGrid(t);
+  persistSession();
+}
+
+// ─── Secondary Blocks ───────────────────────────────────────────────────────
+function renderSecondaryBlocks(t) {
+  const container = document.getElementById('secondary-blocks');
+  container.innerHTML = '';
+  container.appendChild(buildFingerprintsBlock(t.fingerprints || []));
+  container.appendChild(buildNotationNotesBlock(t.notation_notes || null));
+  container.appendChild(buildAmbiguitiesBlock(t.ambiguities || null));
+  container.appendChild(buildVariantsBlock(t.variants || null));
+  container.appendChild(buildRecordingsBlock(t.recordings || []));
+}
+
+function collapsibleSection(title, bodyEl, startOpen) {
+  const sec = document.createElement('div');
+  sec.className = 'collapse-section';
+
+  const header = document.createElement('div');
+  header.className = 'collapse-header';
+  header.innerHTML = `<h3>${escHtml(title)}</h3><span class="collapse-arrow ${startOpen?'open':''}">▶</span>`;
+  header.onclick = () => {
+    const open = body.classList.toggle('open');
+    header.querySelector('.collapse-arrow').classList.toggle('open', open);
+  };
+  sec.appendChild(header);
+
+  const body = document.createElement('div');
+  body.className = 'collapse-body' + (startOpen ? ' open' : '');
+  body.appendChild(bodyEl);
+  sec.appendChild(body);
+  return sec;
+}
+
+function buildFingerprintsBlock(fps) {
+  const wrap = document.createElement('div');
+
+  fps.forEach((fp, i) => {
+    wrap.appendChild(buildFpCard(fp));
+  });
+
+  const addBtn = document.createElement('button');
+  addBtn.className = 'add-row-btn';
+  addBtn.textContent = '+ Add Fingerprint';
+  addBtn.onclick = () => {
+    wrap.insertBefore(buildFpCard({ id:'', label:'', location:{ section:'', bars:[] }, chords:[], description:'' }), addBtn);
+    persistSession();
+  };
+  wrap.appendChild(addBtn);
+  return collapsibleSection(`Fingerprints (${fps.length})`, wrap, fps.length > 0);
+}
+
+function buildFpCard(fp) {
+  const card = document.createElement('div');
+  card.className = 'card fp-card';
+  card.innerHTML = `
+    <button class="card-del" title="Delete">×</button>
+    <div class="field-row"><span class="field-label">ID</span><input class="field-input mono" data-fp="id" value="${escAttr(fp.id||'')}" placeholder="fingerprint-id"></div>
+    <div class="field-row"><span class="field-label">Label</span><input class="field-input" data-fp="label" value="${escAttr(fp.label||'')}" placeholder="Label"></div>
+    <div class="field-row"><span class="field-label">Section</span><input class="field-input" data-fp="loc-section" value="${escAttr(fp.location?.section||'')}" placeholder="Section"></div>
+    <div class="field-row"><span class="field-label">Bars</span><input class="field-input mono" data-fp="loc-bars" value="${escAttr((fp.location?.bars||[]).join(', '))}" placeholder="1, 2, 3"></div>
+    <div class="field-row"><span class="field-label">Chords</span><input class="field-input mono" data-fp="chords" value="${escAttr((fp.chords||[]).join(', '))}" placeholder="Dm7, G7, Cmaj7"></div>
+    <div class="field-row"><span class="field-label">Description</span><input class="field-input" data-fp="description" value="${escAttr(fp.description||'')}" placeholder="Description"></div>
+  `;
+  card.querySelector('.card-del').onclick = () => { card.remove(); persistSession(); };
+  card.querySelectorAll('input').forEach(inp => inp.oninput = debounce(() => persistSession(), 400));
+  return card;
+}
+
+function buildNotationNotesBlock(nn) {
+  const wrap = document.createElement('div');
+  if (nn) {
+    Object.entries(nn).forEach(([k, v]) => {
+      wrap.appendChild(buildKvRow(k, v));
+    });
+  }
+  const addBtn = document.createElement('button');
+  addBtn.className = 'add-row-btn';
+  addBtn.textContent = '+ Add Note';
+  addBtn.onclick = () => { wrap.insertBefore(buildKvRow('', ''), addBtn); persistSession(); };
+  wrap.appendChild(addBtn);
+  return collapsibleSection('Notation Notes', wrap, !!nn && Object.keys(nn).length > 0);
+}
+
+function buildKvRow(k, v) {
+  const row = document.createElement('div');
+  row.className = 'kv-row';
+  row.dataset.block = 'nn';
+  row.innerHTML = `<input class="kv-key" value="${escAttr(k)}" placeholder="key"><input class="kv-val" value="${escAttr(v)}" placeholder="value"><button class="kv-del" title="Delete">×</button>`;
+  row.querySelector('.kv-del').onclick = () => { row.remove(); persistSession(); };
+  row.querySelectorAll('input').forEach(inp => inp.oninput = debounce(() => persistSession(), 400));
+  return row;
+}
+
+function buildAmbiguitiesBlock(ambs) {
+  const wrap = document.createElement('div');
+  (ambs || []).forEach(a => wrap.appendChild(buildAmbCard(a)));
+  const addBtn = document.createElement('button');
+  addBtn.className = 'add-row-btn';
+  addBtn.textContent = '+ Add Ambiguity';
+  addBtn.onclick = () => { wrap.insertBefore(buildAmbCard({ section:'', bar:0, context:'', chords:[], note:'' }), addBtn); persistSession(); };
+  wrap.appendChild(addBtn);
+  return collapsibleSection(`Ambiguities${ambs&&ambs.length?' ('+ambs.length+')':''}`, wrap, !!(ambs&&ambs.length));
+}
+
+function buildAmbCard(a) {
+  const card = document.createElement('div');
+  card.className = 'card amb-card';
+  card.innerHTML = `
+    <button class="card-del" title="Delete">×</button>
+    <div class="field-row"><span class="field-label">Section</span><input class="field-input" data-amb="section" value="${escAttr(a.section||'')}"></div>
+    <div class="field-row"><span class="field-label">Bar</span><input class="field-input" type="number" data-amb="bar" value="${a.bar||''}"></div>
+    <div class="field-row"><span class="field-label">Context</span><input class="field-input" data-amb="context" value="${escAttr(a.context||'')}"></div>
+    <div class="field-row"><span class="field-label">Chords</span><input class="field-input mono" data-amb="chords" value="${escAttr((a.chords||[]).join(', '))}"></div>
+    <div class="field-row"><span class="field-label">Note</span><input class="field-input" data-amb="note" value="${escAttr(a.note||'')}"></div>
+  `;
+  card.querySelector('.card-del').onclick = () => { card.remove(); persistSession(); };
+  card.querySelectorAll('input').forEach(inp => inp.oninput = debounce(() => persistSession(), 400));
+  return card;
+}
+
+function buildVariantsBlock(vars) {
+  const wrap = document.createElement('div');
+  (vars || []).forEach(v => wrap.appendChild(buildVarCard(v)));
+  const addBtn = document.createElement('button');
+  addBtn.className = 'add-row-btn';
+  addBtn.textContent = '+ Add Variant';
+  addBtn.onclick = () => { wrap.insertBefore(buildVarCard({ section:'', bar:0, context:'', chords:[], note:'' }), addBtn); persistSession(); };
+  wrap.appendChild(addBtn);
+  return collapsibleSection(`Variants${vars&&vars.length?' ('+vars.length+')':''}`, wrap, !!(vars&&vars.length));
+}
+
+function buildVarCard(v) {
+  const card = document.createElement('div');
+  card.className = 'card var-card';
+  card.innerHTML = `
+    <button class="card-del" title="Delete">×</button>
+    <div class="field-row"><span class="field-label">Section</span><input class="field-input" data-var="section" value="${escAttr(v.section||'')}"></div>
+    <div class="field-row"><span class="field-label">Bar</span><input class="field-input" type="number" data-var="bar" value="${v.bar||''}"></div>
+    <div class="field-row"><span class="field-label">Context</span><input class="field-input" data-var="context" value="${escAttr(v.context||'')}"></div>
+    <div class="field-row"><span class="field-label">Chords</span><input class="field-input mono" data-var="chords" value="${escAttr((v.chords||[]).join(', '))}"></div>
+    <div class="field-row"><span class="field-label">Note</span><input class="field-input" data-var="note" value="${escAttr(v.note||'')}"></div>
+  `;
+  card.querySelector('.card-del').onclick = () => { card.remove(); persistSession(); };
+  card.querySelectorAll('input').forEach(inp => inp.oninput = debounce(() => persistSession(), 400));
+  return card;
+}
+
+function buildRecordingsBlock(recs) {
+  const wrap = document.createElement('div');
+  const table = document.createElement('table');
+  table.className = 'rec-table';
+  table.innerHTML = `<thead><tr><th>Artist</th><th>Year</th><th></th></tr></thead>`;
+  const tbody = document.createElement('tbody');
+  table.appendChild(tbody);
+  recs.forEach(r => tbody.appendChild(buildRecRow(r)));
+  wrap.appendChild(table);
+  const addBtn = document.createElement('button');
+  addBtn.className = 'add-row-btn';
+  addBtn.textContent = '+ Add Recording';
+  addBtn.onclick = () => { tbody.appendChild(buildRecRow({ artist:'', year:'' })); persistSession(); };
+  wrap.appendChild(addBtn);
+  return collapsibleSection(`Recordings (${recs.length})`, wrap, recs.length > 0);
+}
+
+function buildRecRow(r) {
+  const tr = document.createElement('tr');
+  tr.className = 'rec-row';
+  tr.innerHTML = `
+    <td><input class="rec-input" data-rec="artist" value="${escAttr(r.artist||'')}" placeholder="Artist"></td>
+    <td style="width:70px"><input class="rec-input" data-rec="year" value="${escAttr(r.year||'')}" placeholder="Year"></td>
+    <td style="width:30px"><button class="rec-del-btn" title="Delete">×</button></td>
+  `;
+  tr.querySelector('.rec-del-btn').onclick = () => { tr.remove(); persistSession(); };
+  tr.querySelectorAll('input').forEach(inp => inp.oninput = debounce(() => persistSession(), 400));
+  return tr;
+}
+
+// ─── Navigation ─────────────────────────────────────────────────────────────
+function saveAndNext() {
+  collectEdits();
+  const idx = state.currentIndex;
+  state.statuses[idx] = 'saved';
+
+  // Build saved output list
+  state.savedOutput = state.tunes
+    .map((t, i) => state.statuses[i] === 'saved' ? deepClone(t) : null)
+    .filter(Boolean);
+
+  renderSidebar();
+
+  const isLast = idx === state.tunes.length - 1;
+  if (isLast) {
+    saveState();
+    downloadOutput();
+    if (confirm('All tunes reviewed! Download complete. Reset session?')) {
+      clearSession();
+      location.reload();
+    }
+    return;
+  }
+
+  state.currentIndex = idx + 1;
+  saveState();  // persist after index change, without re-collecting old DOM
+  renderTune(state.currentIndex);
+}
+
+function skipTune() {
+  collectEdits();
+  state.statuses[state.currentIndex] = 'skipped';
+
+  const isLast = state.currentIndex === state.tunes.length - 1;
+  if (!isLast) {
+    state.currentIndex++;
+    saveState();  // persist after index change, without re-collecting old DOM
+    renderTune(state.currentIndex);
+  } else {
+    saveState();
+    renderSidebar();
+    updateStatusBadge();
+  }
+}
+
+function updateStatusBadge() {
+  const badge = document.getElementById('status-badge');
+  const st = state.statuses[state.currentIndex];
+  badge.className = 'status-badge ' + st;
+  badge.textContent = st.charAt(0).toUpperCase() + st.slice(1);
+}
+
+// ─── Output download ────────────────────────────────────────────────────────
+function downloadOutput() {
+  collectEdits();
+  const output = state.tunes
+    .map((t, i) => state.statuses[i] === 'saved' ? deepClone(t) : null)
+    .filter(Boolean);
+  const blob = new Blob([JSON.stringify(output, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'corrected_tunes.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escAttr(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function debounce(fn, delay) {
+  let t;
+  return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); };
+}
+
+// ─── Boot ───────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
