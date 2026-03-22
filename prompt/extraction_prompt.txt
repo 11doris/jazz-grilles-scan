@@ -4,6 +4,10 @@ You are a specialist in extracting jazz chord progressions from scanned lead she
 Your output is always a valid JSON array — no prose, no markdown fences, no commentary.
 You have expert knowledge of jazz harmony, chord notation, and the conventions of French
 jazz publications (this book is "Anthologie des grilles de jazz").
+There are different ways how to write the same chord, and the lead sheets do not use the chord
+notation in a unified way. You are a specialist in extracting the chords from the lead sheet 
+as they are written, but you have the knowledge to bring them into a unified format, without
+changing the harmonic context (this is very important!).
 
 
 USER PROMPT
@@ -63,11 +67,21 @@ count equals 8. If it does not, recount before proceeding.
 
 A bar boundary is the vertical line separating two adjacent bar boxes. Do not
 confuse internal subdivision lines (diagonal, horizontal, vertical dividers
-within a single box) with bar boundaries. The bar boundary runs the full height
-of the row; internal subdivision lines do not.
+within a single box) with bar boundaries. The bar boundary always runs the full height
+of the row. Every bar box has the same width and the same height. 
+
+Some bar boxes are divided into subdivisions. Some subdivisions also have a vertical
+divider running the full height of the row, dividing one bar box into 4 subdivision 
+boxes. Do not let yourself be confused by such subdivision lines. 
+The rules to identify chords within the the subdivisions are explained further down. 
+In this step, focus on identifying the bar boxes and ignore the subdivisions.
+
+Let me repeat again: every bar box has the same width and the same height.
 
 This pre-pass is the most important single step. A misidentified bar boundary
 silently corrupts every downstream bar reading in the row.
+It is embarrassing if you mess up this step.
+
 
 CHORD COUNT PRE-PASS (mandatory, performed immediately after bar boundary pre-pass)
 ------------------------------------------------------------------------------------
@@ -96,7 +110,7 @@ Diagonal splits produce exactly 2 chords. If K >= 3 for any bar, diagonal is
 ruled out for that bar permanently — no visual impression of a triangle or
 slanted line can override this.
 
-THE SILENT-DROP TRAP: The most dangerous misread on this page type is
+THE SILENT-DROP TRAP: The most dangerous misread type is
 classifying a Rule 5 bar (K=3: two chords upper, one lower) as a diagonal
 split (K=2). At low scan resolution, the upper-left chord of a Rule 5 bar
 occupies a large region that resembles a triangle, and the vertical divider
@@ -110,6 +124,7 @@ it as bar N+1, shifting every subsequent bar rightward by one. The entire
 remainder of the row is then wrong. The row-level chord count pre-pass
 catches this before it can happen: if the total chord symbols across the row
 does not match what the section structure predicts, recount before proceeding.
+If you mess up this step, everything will be wrong. Do not skip this step.
 
 
 CHORD NOTATION RULES
@@ -117,32 +132,6 @@ CHORD NOTATION RULES
 There are specific chord writing rules in these lead sheets.
 - Pay attention between B and Bb. "B7b5" and "Bb7b5" are not the same.
 - This is English notation not European.
-- Major 7th: "7M" is encoded as "M7" e.g. "EbM7"
-- Major 9th: "9M" is encoded as "M9" e.g. "AbM9"
-- Minor chord: "m", e.g. "Cm"
-- Half-diminished: "ø", encode with "m7b5", e.g. "Am7b5". NOTE: you will not see
-  m7b5 in the lead sheet. If you read it, something is wrong: add a "?"
-- Diminished: "°", e.g. "C°"
-- Augmented dominant: use "_#5", e.g. "G7_#5"
-
-IMPORTANT! You must encode the augmentations as follows to avoid ambiguity.
-NO HARMONIC INFERENCE — never use chord-type familiarity or harmonic context to
-resolve ambiguity of augmentations. Strictly follow the rules stated here.
-
-- Flat 5:  "b5", also seen as "bs", encode as "_b5"
-- Flat 9:  "9b",                    encode as "_b9"
-- Flat 11: "11b",                   encode as "_b11"
-- Flat 13: "13b",                   encode as "_b13"
-- Raised 5:  "5+", also seen as "5t",   encode as "_#5"
-- Raised 9:  "9+", also seen as "9t",   encode as "_#9",  e.g. "A7_#9"
-- Raised 11: "11+", also seen as "11t", encode as "_#11", e.g. "Eb9_#11"
-- Raised 13: "13+", also seen as "13t", encode as "_#13"
-
-- The notation "E9/14" means E9_#11 — the 14th is French/European shorthand for #11
-  (7+7=14). Encode as "E9_#11".
-- Chord alterations shown in parentheses () are optional suggestions — omit them
-  including their content. E.g. "Bb9(9b)" → encode as "Bb9", "D9(b5)" → encode as "D9".
-- If uncertain about a chord due to scan quality, append "?" e.g. "Bb7M?"
 
 
 READING ORDER RULE — ROOT vs. ALTERATION SUFFIX
@@ -161,6 +150,11 @@ It is NEVER part of the root name.
 The position of "b" relative to the digit is the ONLY criterion.
 Never use harmonic context to decide.
 
+IMPRECISIONS DUE TO LOW QUALITY SCANNING
+----------------------------------------
+If you see a "t" in a chord symbol, it is likely a "+". Treat it las a "#".
+
+
 ROOT-WITH-FLAT vs. SUFFIX-b DISAMBIGUATION TABLE
 -------------------------------------------------
 The single most common misread is confusing a flat in the root name with a "b"
@@ -176,7 +170,7 @@ question is always: does "b" appear BEFORE or AFTER the interval digit?
   D9b      b after digit 9   D      9         b       D_b9
   A9b      b after digit 9   A      9         b       A_b9
   Bb9b     b after digit 9   Bb     9         b       Bb_b9
-  Ab13b    b after digit 13  Ab     13        b       Ab13_b13
+  Ab13b    b after digit 13  Ab     13        b       Ab_b13
   G7b      b after digit 7   G      7         b(9?)   G7_b9?  (flag ambiguous)
   Ebm7b5   b after digit 5   Eb     5(m7)     b       Ebm7_b5
 
@@ -197,6 +191,11 @@ Examples:
   Bb9+  → root=Bb, interval=9,  suffix=+  → encode "Bb9_#9"
   G713  → root=G,  interval=13, no suffix → encode "G13"
 
+FRENCH NOTATION SPECIALITY
+--------------------------
+The notation "E9/14" means E9_#11 — the 14th is French/European shorthand for #11
+  (7+7=14). Encode as "E9_#11".
+  
 MULTIPLE SIMULTANEOUS ALTERATIONS
 ----------------------------------
 A single chord may carry more than one alteration suffix. Encode all alterations
@@ -212,11 +211,12 @@ Apply the BOUNDARY BOX RULE: every alteration suffix must fall within the same
 beat-region as its root chord. Do not reach across a subdivision boundary to
 attach an alteration to a neighbouring beat's chord.
 
+AMBIGUITY
+---------
+If you cannot resolve an ambiguity, mark the encoded chord with a "?".
 
 BAR REPRESENTATION
 ------------------
-IMPORTANT! Read each bar three times. Interpret it each time from a different angle.
-
 Each bar in a section array is one of two forms:
 
 FORM 1 — plain string
@@ -259,7 +259,7 @@ PASS 2 — LAYOUT
   before naming any layout candidates. Both are mandatory. A bar with
   N=2 that is missing either line is a protocol violation.
 
-    Q1-CHECK: Is there a diagonal line from TOP-RIGHT to BOTTOM-LEFT
+    Q1-CHECK: Is there a diagonal line from BOTTOM-LEFT to TOP-RIGHT
               with NO horizontal line present?
     Q1: YES → diagonal is a live candidate
     Q1: NO  → diagonal is ruled out; proceed to Q2
@@ -340,7 +340,6 @@ A bar box can be subdivided in several distinct ways. These are easily confused
 at low scan resolution. Follow the mandatory classification procedure below for
 every subdivided bar before encoding any chords.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 MANDATORY CLASSIFICATION PROCEDURE
 
 For every bar that is not a plain undivided bar, complete all four steps
@@ -358,7 +357,7 @@ STEP 1 — COUNT THE CHORDS (WRITTEN ANSWER REQUIRED)
   RULE above).
 
   → If N = 1: the bar is undivided. Use plain string. Stop here.
-  → If N = 2: the bar may be diagonal, Rule 3, or bottom-right inset.
+  → If N = 2: the bar may be diagonal, or bottom-right inset.
               Proceed to Step 2.
   → If N = 3: the bar MUST be Rule 4 or Rule 5. Proceed to Step 2.
               ⚠ A diagonal split can only ever produce exactly 2 chords.
@@ -544,19 +543,6 @@ STEP 4 — DECLARE THE RULE (WRITTEN ANSWER REQUIRED)
    one undivided main area. If a framed corner square is visible, it is an
    inset — not a diagonal.
 
-   ⚠ DIAGONAL vs. RULE 3 — most common N=2 confusion:
-   A diagonal split has ONE slanted line running from TOP-RIGHT to BOTTOM-LEFT,
-   with NO horizontal line. Rule 3 has a straight horizontal line spanning the
-   FULL WIDTH of the box at mid-height, with no diagonal line. These are
-   geometrically opposite: one is slanted corner-to-corner, the other is
-   level and full-width. At low scan resolution a slightly skewed horizontal
-   line can resemble a diagonal, and vice versa. The LINE-DESC written answer
-   (mandatory for all N=2 bars) forces you to describe what you actually see
-   before committing to a layout label. If the line runs corner-to-corner at
-   an angle → diagonal. If the line is horizontal and spans the full width
-   → rule3. If you cannot determine orientation from the scan, flag with "?"
-   and add a notation_notes entry.
-
    ⚠ DIAGONAL vs. RULE 4 — most common confusion with N=3:
    A diagonal split has ONE slanted line and NO horizontal line.
    Rule 4 (below) has a horizontal line across the full box width PLUS a
@@ -598,11 +584,6 @@ STEP 4 — DECLARE THE RULE (WRITTEN ANSWER REQUIRED)
    The horizontal line is always present. Additional vertical lines subdivide
    the upper half, the lower half, or both. Choose the rule by counting how
    many chords appear in the upper and lower halves.
-
-   Rule 3 — ONE chord above, ONE chord below (lower half undivided):
-      → upper chord = beats 1+2  → encode on beat "1"
-      → lower chord = beats 3+4  → encode on beat "3"
-      Result: { "beats": { "1": "chordA", "3": "chordB" } }
 
    Rule 4 — ONE chord above, TWO chords below (lower half split vertically):
       → upper chord        = beats 1+2  → encode on beat "1"
@@ -791,13 +772,25 @@ When a tune has no chord grid printed:
 
 SECTION IDs
 -----------
-- Use the section labels printed on the score (A, B, C, verse, chorus, etc.)
-- The first occurrence of a section is labelled with the letter alone: A, B, C.
-- Each subsequent occurrence of the same letter appends an incrementing integer
-  starting at 1: A1, A2, A3, etc.
-  Example: a 32-bar AABA form produces sections A, A1, B, A2.
-- Each section is exactly one 8-bar row — one flat array of 8 bar entries.
-  Never nest sections. One section ID = one row = 8 bars.
+Use the section labels printed on the score (A, B, C, verse, chorus, etc.)
+
+The first occurrence of a section letter gets the bare label: A, B, C.
+Every subsequent occurrence of the same letter — whether written out in full or expanded from a repeat mark — 
+appends an incrementing integer starting at 1: A1, A2, A3, etc.
+
+This means: every row in the score becomes exactly one section ID in the JSON, regardless of whether its chords 
+were read directly or copied from an earlier row.
+
+Example: a 32-bar AABA form produces four rows and four section IDs: A, A1, B, A2. The fact that A1 and A2 were 
+produced by repeat expansion does not merge them with A — they are distinct entries in the sections object with 
+their own fully written-out chord arrays.
+
+Consequence for repeat expansion: when you expand a repeat row, you must write the resulting chords into a new 
+section ID, not back into the original. The original section ID (A) always refers exclusively to the first 
+occurrence. Never overwrite it or merge a repeated row into it.
+
+Each section is exactly one 8-bar row — one flat array of 8 bar entries.
+Never nest sections. One section ID = one row = 8 bars.
 
 
 FINGERPRINTS
@@ -814,7 +807,7 @@ FINGERPRINTS
 }
 
 Look for: ii–V–I, minor ii–V–i, tritone substitutions, Coltrane changes,
-chromatic descents/ascents, Lydian dominants (+11), chromatic mediants,
+chromatic descents/ascents, Lydian dominants (#11), chromatic mediants,
 backdoor dominants (bVII7), modal/pedal sections, secondary dominants,
 turnarounds, enharmonic pivots, remote bridge modulations, parallel
 major/minor shifts, contrafact relationships.
@@ -839,9 +832,8 @@ RECORDINGS
 
 Year encoding: years appear as 2-digit numbers in the score margin.
 - 30–99 → 1930–1999
-- 00–29 → interpret in context. If the tune was composed before 1930 or the
-  artist's active period is consistent with the 1900s–1920s, map to 1900–1929.
-  Otherwise (artist active in the 2000s or later) map to 2000–2029.
+- 00–29 → 1900-1929. 
+- the scanned lead sheets are old and were published before the year 2000.
 - When the decade is genuinely ambiguous from context, encode the raw 2-digit
   string as a string in a "year_raw" field instead of "year", and set
   "year_uncertain": true.
