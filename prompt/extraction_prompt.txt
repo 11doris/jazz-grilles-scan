@@ -730,6 +730,19 @@ as uncertain.
    Copy the entire previous row of the same section verbatim.
    Override any explicitly written bars.
    REPEAT-TYPE to write: row-arrow
+   
+   ROW-ARROW OVERRIDE IDENTIFICATION (mandatory pre-pass):
+   Before expanding a row-arrow repeat, perform a dedicated override-identification 
+   pass across the entire row. For every bar box in the row, determine independently 
+   whether it contains an explicit chord symbol or a dash/blank.
+   Write for every bar:
+   ROW-BAR N: [EXPLICIT: <symbol(s) seen>] or [DASH/BLANK: copy from previous row]
+   Commit to all 8 override/dash decisions before expanding any bar. Do not identify 
+   overrides while simultaneously reading chord content — these are two separate steps. 
+   A bar that contains only a dash, a dot, or is visually empty is always a copy. Only 
+   bars with a legible chord symbol are overrides.
+   This pre-pass prevents a chord symbol inside a multi-chord bar from being misread as 
+   occupying an adjacent bar, which shifts all subsequent bars rightward.
 
 3. TWO-BAR DIAGONAL (diagonal line spanning two adjacent bar boxes):
    Copy the immediately preceding two bars verbatim into those two bars.
