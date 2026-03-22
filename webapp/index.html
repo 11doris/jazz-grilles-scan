@@ -703,17 +703,19 @@ function buildSectionBlock(sKey, bars) {
   const block = document.createElement('div');
   block.className = 'section-block';
   block.dataset.section = sKey;
-  block.setAttribute('draggable', 'true');
+  // draggable is NOT set here; it is enabled only when the drag handle is pressed
+  // (setting draggable=true statically causes dragstart's e.target to be the block,
+  //  making it impossible to restrict dragging to the handle via e.target checks)
 
   // ── Drag-and-drop ──────────────────────────────────────────────
   block.addEventListener('dragstart', (e) => {
-    if (!e.target.closest('.drag-handle')) { e.preventDefault(); return; }
     dragSectionKey = block.dataset.section;
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', dragSectionKey);
     setTimeout(() => block.classList.add('dragging'), 0); // defer so browser captures preview before opacity change
   });
   block.addEventListener('dragend', () => {
+    block.draggable = false;
     block.classList.remove('dragging');
     dragSectionKey = null;
     document.querySelectorAll('.section-block').forEach(b => b.classList.remove('drag-over'));
@@ -755,6 +757,9 @@ function buildSectionBlock(sKey, bars) {
   dragHandle.className = 'drag-handle';
   dragHandle.title = 'Drag to reorder';
   dragHandle.textContent = '⠿';
+  // Enable dragging only when the user presses down on the handle
+  dragHandle.addEventListener('mousedown', () => { block.draggable = true; });
+  dragHandle.addEventListener('mouseup', () => { block.draggable = false; });
   const labelEl = document.createElement('span');
   labelEl.className = 'section-label';
   labelEl.contentEditable = 'true';
