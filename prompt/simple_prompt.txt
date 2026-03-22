@@ -53,6 +53,33 @@ This pre-pass is the most important single step. A misidentified bar boundary
 silently corrupts every downstream bar reading in the row.
 
 
+BAR COUNT POST-PASS (mandatory after reading each row)
+------------------------------------------------------
+After encoding all bars in a row, count the measures you have written and
+compare against the bar count committed in the pre-pass:
+
+  WRITTEN: N measures — EXPECTED: N boxes — MATCH / MISMATCH
+
+If there is a mismatch, stop immediately. Do not proceed to the next row. Go
+back and re-read the row from scratch, paying attention to:
+
+- TWO-BAR repeat signs: a sign whose diagonal slash crosses a bar boundary
+  consumes TWO box positions in your output, not one. If you wrote only one
+  measure for it, you are one measure short.
+- SINGLE-BAR repeat signs: a sign contained entirely within one box consumes
+  ONE box position. If you expanded it into two measures, you are one measure
+  over.
+- SECTION-REPEAT dashes: each dash (–) occupies one box position and must be
+  expanded to one measure copied from the source section. A row of six dashes
+  followed by two new chords must produce exactly eight measures total.
+- BAR BOUNDARY MISIDENTIFICATION: re-run the pre-pass, looking specifically at
+  subdivision lines. A full-height vertical line that is actually an internal
+  subdivision of one bar box must not be counted as a bar boundary.
+
+Only when WRITTEN equals EXPECTED may you proceed to the next row. Never carry
+a miscount forward.
+
+
 ## Section Encoding Rules
 
 Each Section[] is an array of measures. Each measure is one of:
@@ -95,16 +122,24 @@ beats it subdivides.
 ### Null and repeat
 
 - A measure that is explicitly a rest or truly empty: use null.
-- SINGLE-BAR repeat ("•" or "—" in one cell): repeat the immediately
-  preceding measure. Expand it — write the chord out again explicitly.
+- SINGLE-BAR repeat ("•" or "—" in one cell): the sign sits entirely within
+  one box. Repeat the immediately preceding measure. Expand it — write the
+  chord out again explicitly.
 - TWO-BAR repeat: a sign that visually spans exactly two adjacent bar boxes.
   It appears as two dots (one in each box) connected by a double diagonal
   slash (//), i.e. "•//•". The double slash always crosses the shared bar
   boundary between the two boxes, making it unmistakably wider than a
   single-bar repeat. This sign means: repeat the previous TWO measures as a
   pair. Expand both measures explicitly in sequence.
-  Do not confuse this with a single-bar repeat (•) which sits entirely within
-  one box and copies only the one preceding bar.
+
+BAR-BOUNDARY CROSSING TEST: Before classifying any repeat sign, ask: does the
+diagonal slash cross a full-height vertical bar boundary? If yes → two-bar
+repeat (expand the previous two bars, producing two measures in the output).
+If the slash is contained entirely within one bar box → single-bar repeat
+(expand only the previous one bar, producing one measure in the output). A
+slash that appears to touch a bar boundary but does not clearly cross it should
+be treated as a single-bar repeat.
+
 - Never emit a repeat symbol in the JSON output. Always expand repeats into
   their full chord content so every measure in the array is self-contained.
 
@@ -175,175 +210,3 @@ Use these suffix conventions consistently:
 - Arranger/editor credits and record reference lists on the side margins
 - Publisher or copyright information
 - Page headers/footers unrelated to the tune
-
-
-## Few-Shot Examples
-
-The following examples illustrate subdivision patterns and the section-repeat
-arrow.
-
-────────────────────────────────────────────────────────────────────────────
-EXAMPLE 1 — Diagonal split (2 chords per bar)
-Input: Easy Living — Ralph Rainger / Leo Robin, 1937
-
-Bar 1 of the A section contains two chords separated by a diagonal line
-running from the lower-left to the upper-right corner of the box:
-  upper-right cell: FM7  (beat 1)
-  lower-left cell:  Db9  (beat 3)
-
-Expected encoding for that bar:
-  { "beats": { "1": "FM7", "3": "Db9" } }
-
-Bar 2 uses the VERTICAL SPLIT pattern (left half + diagonally split right
-half), yielding three chords:
-  left half:               Gm7  (beat 1, spans beats 1–2)
-  right half upper-right:  Bø   (beat 3)
-  right half lower-left:   E7   (beat 4)
-
-Expected encoding for that bar:
-  { "beats": { "1": "Gm7", "3": "Bø", "4": "E7" } }
-
-Full A section output:
-[
-  { "beats": { "1": "FM7",  "3": "Db9"            } },
-  { "beats": { "1": "Gm7",  "3": "Bø",  "4": "E7" } },
-  { "beats": { "1": "Am7",  "3": "B7_b5"          } },
-  { "beats": { "1": "BbM7", "3": "Eb7"            } },
-  { "beats": { "1": "FM7",  "3": "Dm7"            } },
-  { "beats": { "1": "Gm7",  "3": "C7"             } },
-  { "beats": { "1": "A7_#5","3": "D9"             } },
-  { "beats": { "1": "G7_#5","3": "C9"             } }
-]
-
-────────────────────────────────────────────────────────────────────────────
-EXAMPLE 2 — Horizontal split (3 chords, upper half diagonal + lower chord)
-Input: Easy Street — Alan Rankin Jones, 1941
-
-Bar 1 of the A section uses the HORIZONTAL SPLIT pattern: the upper half is
-itself divided by a diagonal, and the lower half is a single chord:
-  upper-right sub-cell:  Eb   (beat 1)
-  upper-left sub-cell:   G7   (beat 2)
-  lower half:            C7   (beats 3–4, encode as beat 3 only)
-
-Expected encoding for that bar:
-  { "beats": { "1": "Eb", "2": "G7", "3": "C7" } }
-
-────────────────────────────────────────────────────────────────────────────
-EXAMPLE 3 — Single chord (no subdivision)
-Input: any tune
-
-A bar box with no dividing lines at all contains a single chord for the
-whole measure. Encode it as a plain string:
-  "FM7"
-
-────────────────────────────────────────────────────────────────────────────
-EXAMPLE 4 — Section-repeat arrow with dashes
-Input: Easy Living — A1 section
-
-Section A1 opens with a section-repeat arrow. The arrow descends from section
-A's row and points horizontally into bar 1 of section A1. Bars 1–6 of A1
-contain dashes (–); bars 7–8 contain new chords written out explicitly:
-  bar 7: diagonal split  F (beat 1) / Bbm7 (beat 3)
-  bar 8: diagonal split  Ebm7 (beat 1) / Ab7 (beat 3)
-
-Correct A1 output (bars 1–6 copied from A, bars 7–8 from the sheet):
-[
-  { "beats": { "1": "FM7",  "3": "D_b9"           } },
-  { "beats": { "1": "Gm7",  "3": "Bø",  "4": "E7" } },
-  { "beats": { "1": "Am7",  "3": "B7_b5"          } },
-  { "beats": { "1": "BbM7", "3": "Eb7"            } },
-  { "beats": { "1": "FM7",  "3": "Dm7"            } },
-  { "beats": { "1": "Gm7",  "3": "C7"             } },
-  { "beats": { "1": "F",    "3": "Bbm7"           } },
-  { "beats": { "1": "Ebm7", "3": "Ab7"            } }
-]
-
-────────────────────────────────────────────────────────────────────────────
-EXAMPLE 5 — Two-bar repeat sign (•//•)
-Input: Easy Living — B section
-
-The B section has 8 bars. Bars 1–2 are written out:
-  bar 1: diagonal split  DbM7 (beat 1) / Bbm7 (beat 3)
-  bar 2: diagonal split  Ebm7 (beat 1) / Ab7  (beat 3)
-
-Bars 3–4 contain a two-bar repeat sign: a double diagonal slash (//) that
-crosses the bar boundary between boxes 3 and 4, with a dot on each side
-(•//•). This means: copy bars 1–2 into bars 3–4.
-
-Bars 5–6 are new single chords: DbM7, Bbm7.
-Bars 7–8: bar 7 is a diagonal split Gm7/C7; bar 8 is a single-bar repeat
-dot, copying bar 7.
-
-Correct B section output:
-[
-  { "beats": { "1": "DbM7", "3": "Bbm7" } },
-  { "beats": { "1": "Ebm7", "3": "Ab7"  } },
-  { "beats": { "1": "DbM7", "3": "Bbm7" } },
-  { "beats": { "1": "Ebm7", "3": "Ab7"  } },
-  "DbM7",
-  "Bbm7",
-  { "beats": { "1": "Gm7",  "3": "C7"   } },
-  { "beats": { "1": "Gm7",  "3": "C7"   } }
-]
-
-────────────────────────────────────────────────────────────────────────────
-
-Full output example (Easy Living, all sections):
-[
-  {
-    "title": "Easy Living",
-    "title_uncertain": false,
-    "composer": "Ralph Rainger – Leo Robin",
-    "year": "1937",
-    "style": "STANDARD",
-    "tempo": "SLOW",
-    "form": "32 A A B A",
-    "time_signature": "4/4",
-    "page": 114,
-    "source": "Anthologie des grilles de jazz",
-    "sections": {
-      "A": [
-        { "beats": { "1": "FM7",   "3": "D_b9"           } },
-        { "beats": { "1": "Gm7",   "3": "Bø",  "4": "E7" } },
-        { "beats": { "1": "Am7",   "3": "B7_b5"          } },
-        { "beats": { "1": "BbM7",  "3": "Eb7"            } },
-        { "beats": { "1": "FM7",   "3": "Dm7"            } },
-        { "beats": { "1": "Gm7",   "3": "C7"             } },
-        { "beats": { "1": "A7_#5", "3": "D9"             } },
-        { "beats": { "1": "G7_#5", "3": "C9"             } }
-      ],
-      "A1": [
-        { "beats": { "1": "FM7",   "3": "D_b9"           } },
-        { "beats": { "1": "Gm7",   "3": "Bø",  "4": "E7" } },
-        { "beats": { "1": "Am7",   "3": "B7_b5"          } },
-        { "beats": { "1": "BbM7",  "3": "Eb7"            } },
-        { "beats": { "1": "FM7",   "3": "Dm7"            } },
-        { "beats": { "1": "Gm7",   "3": "C7"             } },
-        { "beats": { "1": "F",     "3": "Bbm7"           } },
-        { "beats": { "1": "Ebm7",  "3": "Ab7"            } }
-      ],
-      "B": [
-        { "beats": { "1": "DbM7",  "3": "Bbm7"          } },
-        { "beats": { "1": "Ebm7",  "3": "Ab7"           } },
-        { "beats": { "1": "DbM7",  "3": "Bbm7"          } },
-        { "beats": { "1": "Ebm7",  "3": "Ab7"           } },
-        "DbM7",
-        "Bbm7",
-        { "beats": { "1": "Gm7",   "3": "C7"            } },
-        { "beats": { "1": "Gm7",   "3": "C7"            } }
-      ],
-      "A2": [
-        { "beats": { "1": "FM7",   "3": "D_b9"           } },
-        { "beats": { "1": "Gm7",   "3": "Bø",  "4": "E7" } },
-        { "beats": { "1": "Am7",   "3": "B7_b5"          } },
-        { "beats": { "1": "BbM7",  "3": "Eb7"            } },
-        { "beats": { "1": "FM7",   "3": "Dm7"            } },
-        { "beats": { "1": "Gm7",   "3": "C7"             } },
-        { "beats": { "1": "A7_#5", "3": "D9"             } },
-        "F"
-      ]
-    }
-  }
-]
-
-Now transcribe the tune(s) in the provided image using this format.
